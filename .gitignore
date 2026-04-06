@@ -17,6 +17,9 @@ ownerbot.db
 media/
 staticfiles/
 
+# 참고용 파일
+*참고.html
+
 # React
 frontend/node_modules/
 
