@@ -1,0 +1,3045 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주얼리 관리 시스템</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --gold-dark: #A07830;
+    --dark: #0F0F14;
+    --dark2: #1A1A24;
+    --dark3: #24243A;
+    --dark4: #2E2E48;
+    --text: #E8E8F0;
+    --text-muted: #8888AA;
+    --border: #3A3A54;
+    --success: #4CAF82;
+    --warn: #E8A44C;
+    --danger: #E85454;
+    --info: #4C8CE8;
+    --sidebar-w: 220px;
+  }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--dark); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* ── 사이드바 ── */
+  #sidebar {
+    width: var(--sidebar-w); background: var(--dark2); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+  }
+  .logo {
+    padding: 20px 16px 16px; border-bottom: 1px solid var(--border);
+  }
+  .logo-gem { font-size: 22px; }
+  .logo-title { font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+  .logo-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .gold-bar {
+    margin: 12px 16px; background: var(--dark3); border: 1px solid var(--gold-dark);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .gold-bar-label { font-size: 10px; color: var(--text-muted); }
+  .gold-bar-price { font-size: 16px; font-weight: 700; color: var(--gold); }
+  .gold-bar-change { font-size: 11px; color: var(--success); }
+  nav { flex: 1; padding: 8px 0; }
+  .nav-group { margin-bottom: 4px; }
+  .nav-group-label { font-size: 10px; color: var(--text-muted); padding: 8px 16px 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 16px;
+    cursor: pointer; border-radius: 0; transition: all 0.15s;
+    color: var(--text-muted); font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--dark3); color: var(--text); }
+  .nav-item.active { background: rgba(201,168,76,0.12); color: var(--gold); border-left-color: var(--gold); }
+  .nav-icon { width: 16px; text-align: center; font-size: 14px; }
+  .nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); }
+  .user-info { display: flex; align-items: center; gap: 10px; }
+  .user-avatar { width: 30px; height: 30px; background: var(--gold-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--dark); }
+  .user-name { font-size: 12px; font-weight: 600; }
+  .user-role { font-size: 10px; color: var(--text-muted); }
+
+  /* ── 메인 ── */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #topbar {
+    height: 52px; background: var(--dark2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0;
+  }
+  /* ── 서브메뉴 탭 ── */
+  #submenu {
+    display: none; background: var(--dark3); border-bottom: 1px solid var(--border);
+    padding: 0 20px; flex-shrink: 0; gap: 4px; align-items: center; flex-wrap: wrap;
+  }
+  #submenu.visible { display: flex; }
+  .sub-tab {
+    padding: 10px 16px; font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--text-muted); border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .sub-tab:hover { color: var(--text); }
+  .sub-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .page-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .topbar-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--dark3); color: var(--text); cursor: pointer; font-size: 12px;
+    transition: all 0.15s;
+  }
+  .topbar-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .topbar-btn.primary { background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: 600; }
+  .topbar-btn.primary:hover { background: var(--gold-light); }
+  #content { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* ── 공통 컴포넌트 ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .card {
+    background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+  }
+  .card-title { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .card-value { font-size: 22px; font-weight: 700; }
+  .card-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .stat-up { color: var(--success); }
+  .stat-down { color: var(--danger); }
+  .section { margin-bottom: 20px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-title { font-size: 14px; font-weight: 600; }
+  .table-wrap { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--dark3); padding: 10px 14px; text-align: left; font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(58,58,84,0.5); font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-gold { background: rgba(201,168,76,0.2); color: var(--gold); }
+  .badge-success { background: rgba(76,175,130,0.2); color: var(--success); }
+  .badge-warn { background: rgba(232,164,76,0.2); color: var(--warn); }
+  .badge-danger { background: rgba(232,84,84,0.2); color: var(--danger); }
+  .badge-info { background: rgba(76,140,232,0.2); color: var(--info); }
+  .badge-gray { background: rgba(136,136,170,0.2); color: var(--text-muted); }
+  .search-bar {
+    display: flex; gap: 8px; margin-bottom: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .input {
+    background: var(--dark3); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .input:focus { border-color: var(--gold); }
+  .input-sm { padding: 5px 10px; font-size: 12px; }
+  select.input option { background: var(--dark3); }
+  .btn { padding: 7px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+  .btn-gold { background: var(--gold); color: var(--dark); }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+  .btn-danger { background: rgba(232,84,84,0.2); color: var(--danger); border: 1px solid var(--danger); }
+  .action-btns { display: flex; gap: 4px; }
+
+  /* ── 대시보드 ── */
+  .ai-insight {
+    background: linear-gradient(135deg, rgba(201,168,76,0.1), rgba(76,140,232,0.08));
+    border: 1px solid rgba(201,168,76,0.3); border-radius: 10px; padding: 16px; margin-bottom: 20px;
+  }
+  .ai-insight-title { font-size: 12px; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .ai-insight-text { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .ai-insight-text strong { color: var(--gold-light); }
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 50px; margin-top: 10px; }
+  .bar { background: rgba(201,168,76,0.4); border-radius: 3px 3px 0 0; flex: 1; transition: background 0.2s; cursor: pointer; }
+  .bar:hover { background: var(--gold); }
+  .bar.today { background: var(--gold); }
+  .recent-list { list-style: none; }
+  .recent-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(58,58,84,0.5); }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+  .recent-left { display: flex; align-items: center; }
+
+  /* ── 판매 POS ── */
+  .pos-layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; height: calc(100vh - 92px); }
+  .pos-left { display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .pos-right { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; }
+  .pos-cart-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 14px; }
+  .pos-cart-body { flex: 1; overflow-y: auto; padding: 12px; }
+  .cart-item { background: var(--dark3); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .cart-thumb { width: 40px; height: 40px; background: var(--dark4); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .cart-info { flex: 1; }
+  .cart-name { font-size: 12px; font-weight: 600; }
+  .cart-spec { font-size: 11px; color: var(--text-muted); }
+  .cart-price { font-size: 13px; font-weight: 700; color: var(--gold); }
+  .cart-remove { color: var(--danger); cursor: pointer; font-size: 14px; padding: 4px; }
+  .pos-cart-footer { padding: 14px 16px; border-top: 1px solid var(--border); }
+  .total-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); }
+  .total-row.grand { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .total-row.grand span:last-child { color: var(--gold); }
+  .pay-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .pay-btn { padding: 12px; border: 1px solid var(--border); background: var(--dark3); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; text-align: center; transition: all 0.15s; }
+  .pay-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .pay-btn.cash { grid-column: 1 / -1; background: var(--gold); color: var(--dark); border-color: var(--gold); font-size: 13px; }
+  .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; }
+  .product-card {
+    background: var(--dark2); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .product-card:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .product-emoji { font-size: 28px; margin-bottom: 6px; }
+  .product-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .product-spec { font-size: 10px; color: var(--text-muted); }
+  .product-price { font-size: 12px; font-weight: 700; color: var(--gold); margin-top: 4px; }
+
+  /* ── 수리 칸반 ── */
+  .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kanban-col { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .kanban-col-title { font-size: 12px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .kanban-count { background: var(--dark4); padding: 1px 8px; border-radius: 10px; font-size: 11px; }
+  .kanban-card { background: var(--dark3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+  .kanban-card:hover { border-color: var(--gold); }
+  .kanban-card-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .kanban-card-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .kanban-card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .kanban-date { font-size: 10px; color: var(--text-muted); }
+  .overdue { color: var(--danger) !important; font-weight: 600; }
+
+  /* ── AI 어시스턴트 ── */
+  .ai-layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; height: calc(100vh - 92px); }
+  .chat-wrap { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
+  .chat-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .ai-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 80%; }
+  .msg-ai { align-self: flex-start; }
+  .msg-user { align-self: flex-end; }
+  .msg-bubble {
+    padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5;
+  }
+  .msg-ai .msg-bubble { background: var(--dark3); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg-user .msg-bubble { background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3); border-bottom-right-radius: 4px; color: var(--gold-light); }
+  .msg-time { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .msg-ai .msg-time { text-align: left; padding-left: 4px; }
+  .msg-user .msg-time { text-align: right; padding-right: 4px; }
+  .chat-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .chat-input { flex: 1; background: var(--dark3); border: 1px solid var(--border); color: var(--text); padding: 9px 14px; border-radius: 8px; font-size: 13px; outline: none; }
+  .chat-input:focus { border-color: var(--gold); }
+  .chat-send { background: var(--gold); border: none; color: var(--dark); padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; }
+  .quick-btns { padding: 8px 16px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .quick-btn { background: var(--dark3); border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 20px; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+  .quick-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .ai-stats-col { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+
+  /* ── 기념일 카드 ── */
+  .anni-card-adm { background:var(--dark3); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; }
+  .anni-card-adm-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .anni-av { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .rel-tag { font-size:10px; padding:2px 7px; border-radius:10px; font-weight:700; background:var(--dark4); color:var(--text-muted); border:1px solid var(--border); }
+  .anni-dates { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .anni-dt { display:flex; align-items:center; gap:4px; background:var(--dark2); border:1px solid var(--border); border-radius:7px; padding:4px 8px; font-size:11px; }
+  /* ── 고객 CRM ── */
+  .customer-detail { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .customer-header { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .customer-avatar-lg { width: 48px; height: 48px; background: linear-gradient(135deg, var(--gold-dark), var(--gold)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: var(--dark); }
+  .customer-name-lg { font-size: 16px; font-weight: 700; }
+  .customer-grade { font-size: 11px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { background: var(--dark3); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; font-size: 11px; color: var(--text-muted); }
+  .tag.active-tag { border-color: var(--gold); color: var(--gold); }
+  .timeline { list-style: none; }
+  .tl-item { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(58,58,84,0.4); }
+  .tl-dot-wrap { display: flex; flex-direction: column; align-items: center; }
+  .tl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 4px; }
+  .tl-line { flex: 1; width: 1px; background: var(--border); margin-top: 4px; }
+  .tl-text { font-size: 12px; }
+  .tl-date { font-size: 10px; color: var(--text-muted); }
+
+  /* ── 금시세 ── */
+  .gold-chart-area { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .price-display { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .price-big { font-size: 36px; font-weight: 700; color: var(--gold); }
+  .price-change { font-size: 14px; color: var(--success); }
+  .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 20px; }
+  .chart-bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar-fill { width: 100%; background: rgba(201,168,76,0.3); border-radius: 4px 4px 0 0; transition: background 0.2s; cursor: pointer; }
+  .chart-bar-fill:hover, .chart-bar-fill.active { background: var(--gold); }
+  .chart-bar-label { font-size: 9px; color: var(--text-muted); }
+  .calc-box { background: var(--dark3); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .calc-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--gold); }
+  .calc-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .calc-label { font-size: 12px; color: var(--text-muted); width: 60px; flex-shrink: 0; }
+  .calc-result { background: var(--dark2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 14px; font-weight: 700; color: var(--gold); text-align: right; margin-top: 8px; }
+
+  /* ── 스크롤바 ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--dark4); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+  /* ── 모달 ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--dark2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; min-width: 480px; max-width: 600px; }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { cursor: pointer; color: var(--text-muted); font-size: 18px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+  .form-input { background: var(--dark3); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none; }
+  .form-input:focus { border-color: var(--gold); }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+  /* ── 경영관리 ── */
+  .stat-cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .big-stat { background: var(--dark2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .big-stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .big-stat-value { font-size: 26px; font-weight: 700; }
+  .big-stat-bar { height: 4px; background: var(--dark4); border-radius: 2px; margin-top: 10px; }
+  .big-stat-bar-fill { height: 100%; border-radius: 2px; background: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- ══ 로그인 화면 ══ -->
+<div id="login-screen" style="
+  position:fixed; inset:0; background:var(--dark); z-index:9999;
+  display:flex; align-items:center; justify-content:center;
+">
+  <div style="width:380px;">
+    <!-- 로고 -->
+    <div style="text-align:center; margin-bottom:36px;">
+      <div style="font-size:48px; margin-bottom:10px;">💎</div>
+      <div style="font-size:26px; font-weight:900; color:var(--gold); letter-spacing:2px;">JEWEL PRO</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">AI와 함께하는 주얼리 매장 관리 시스템</div>
+    </div>
+    <!-- 로그인 폼 -->
+    <div style="background:var(--dark2); border:1px solid var(--border); border-radius:16px; padding:32px;">
+      <div style="text-align:center; margin-bottom:22px; padding:14px 0 10px;">
+        <div style="font-size:22px; font-weight:900; color:var(--text); letter-spacing:1px;">황금보석 강남점</div>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:6px;">아이디</div>
+        <input id="login-id" style="width:100%; background:var(--dark3); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box;" placeholder="아이디 입력" value="admin">
+      </div>
+      <div style="margin-bottom:24px;">
+        <div style="font-size:11px; color:var(--text-muted); font-weight:600; margin-bottom:6px;">비밀번호</div>
+        <input type="password" style="width:100%; background:var(--dark3); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box;" placeholder="비밀번호 입력" value="1234">
+      </div>
+      <button onclick="doLogin()" style="
+        width:100%; padding:13px; background:#3A6FC4; color:#fff;
+        border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer;
+      ">로그인</button>
+      <div style="text-align:center; margin-top:14px; font-size:11px; color:var(--text-muted);">
+        데모 계정: admin / 1234
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:20px; font-size:11px; color:var(--text-muted);">
+      © 2026 JEWEL PRO · Powered by Claude AI
+    </div>
+  </div>
+</div>
+
+<!-- ── 사이드바 ── -->
+<div id="sidebar">
+  <div class="logo">
+    <div class="logo-gem">💎</div>
+    <div class="logo-title">JEWEL PRO</div>
+    <div class="logo-sub">주얼리 관리 시스템 v1.0</div>
+  </div>
+  <div class="gold-bar">
+    <div class="gold-bar-label">금 시세 (24K, 1돈)</div>
+    <div class="gold-bar-price">₩ 462,000</div>
+    <div class="gold-bar-change">▲ +3,200 (+0.7%) 오늘</div>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">메인</div>
+      <div class="nav-item active" onclick="show('dashboard')">
+        <span class="nav-icon">📊</span> 대시보드
+      </div>
+      <div class="nav-item" onclick="show('ai')">
+        <span class="nav-icon">🤖</span> AI 어시스턴트
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">판매 / 재고</div>
+      <div class="nav-item" onclick="show('pos')">
+        <span class="nav-icon">🛒</span> 판매 (POS)
+      </div>
+      <div class="nav-item" onclick="show('products')">
+        <span class="nav-icon">💎</span> 상품 관리
+      </div>
+      <div class="nav-item" onclick="show('incoming')">
+        <span class="nav-icon">📥</span> 입고 관리
+      </div>
+      <div class="nav-item" onclick="show('transfer')">
+        <span class="nav-icon">🔄</span> 매장간 이동
+      </div>
+      <div class="nav-item" onclick="show('inventory')">
+        <span class="nav-icon">📦</span> 재고 관리
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">고객 / 서비스</div>
+      <div class="nav-item" onclick="show('customers')">
+        <span class="nav-icon">👥</span> 고객 관리
+      </div>
+      <div class="nav-item" onclick="show('repair')">
+        <span class="nav-icon">🔧</span> 수리 / 주문제작
+        <span class="nav-badge">3</span>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">경영 / 설정</div>
+      <div class="nav-item" onclick="show('goldprice')">
+        <span class="nav-icon">📈</span> 금시세
+      </div>
+      <div class="nav-item" onclick="show('reports')">
+        <span class="nav-icon">📋</span> 경영 관리
+      </div>
+      <div class="nav-item" onclick="showSettings('supplier')">
+        <span class="nav-icon">⚙️</span> 기초 / 설정
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">유</div>
+      <div>
+        <div class="user-name">유동주</div>
+        <div class="user-role">관리자 · 강남점</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 메인 영역 ── -->
+<div id="main">
+  <div id="topbar">
+    <div class="page-title" id="page-title">대시보드</div>
+
+
+  </div>
+  <!-- 서브메뉴 탭 (기초/설정 전용) -->
+  <div id="submenu">
+    <div class="sub-tab active" onclick="showSubTab('supplier')">🏢 매입처 관리</div>
+    <div class="sub-tab" onclick="showSubTab('codes')">🏷️ 상품코드 관리</div>
+    <div class="sub-tab" onclick="showSubTab('users')">👨‍💼 사용자 등록</div>
+    <div class="sub-tab" onclick="showSubTab('permissions')">🔐 권한 관리</div>
+    <div class="sub-tab" onclick="showSubTab('points')">⭐ 등급 / 포인트</div>
+    <div class="sub-tab" onclick="showSubTab('sysconfig')">⚙️ 시스템 설정</div>
+  </div>
+  <div id="content">
+
+    <!-- ══ 대시보드 ══ -->
+    <div id="screen-dashboard" class="screen active">
+      <div class="ai-insight">
+        <div class="ai-insight-title">🤖 AI 오늘의 경영 인사이트 · 2026년 3월 25일</div>
+        <div class="ai-insight-text">
+          오늘 금시세가 <strong>+0.7% 상승</strong>했습니다. 현재 재고 중 18K 목걸이 재고가 <strong>3개 미만</strong>으로 발주를 검토하세요.
+          이번 주 <strong>박지영 고객</strong>의 반지 수리가 완료 예정이며, 아직 알림이 발송되지 않았습니다.
+          이번 달 매출이 전월 대비 <strong>+12.4%</strong> 성장 중입니다. 💪
+        </div>
+        <div class="mini-chart">
+          <div class="bar" style="height:35%"></div>
+          <div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:45%"></div>
+          <div class="bar" style="height:70%"></div>
+          <div class="bar" style="height:60%"></div>
+          <div class="bar" style="height:80%"></div>
+          <div class="bar" style="height:65%"></div>
+          <div class="bar" style="height:75%"></div>
+          <div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:85%"></div>
+          <div class="bar" style="height:70%"></div>
+          <div class="bar" style="height:90%"></div>
+          <div class="bar" style="height:78%"></div>
+          <div class="bar today" style="height:88%"></div>
+        </div>
+      </div>
+
+      <div class="grid-4 section">
+        <div class="card">
+          <div class="card-title">💰 오늘 매출</div>
+          <div class="card-value">3,240,000</div>
+          <div class="card-sub stat-up">▲ 전일 대비 +18%</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🛒 오늘 판매 건수</div>
+          <div class="card-value">7건</div>
+          <div class="card-sub stat-up">▲ 전일 대비 +2건</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📦 전체 재고</div>
+          <div class="card-value">248점</div>
+          <div class="card-sub stat-down">▼ 오늘 -3점 판매</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔧 수리 진행중</div>
+          <div class="card-value">8건</div>
+          <div class="card-sub" style="color:var(--warn)">⚠ 3건 완료 임박</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">오늘 판매 내역</div>
+            <button class="btn btn-outline btn-sm" onclick="show('pos')">전체 보기</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>시간</th><th>상품</th><th>고객</th><th>금액</th><th>결제</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>15:42</td><td>18K 다이아 반지</td><td>이수진</td><td style="color:var(--gold)">820,000</td><td><span class="badge badge-info">카드</span></td></tr>
+                <tr><td>14:18</td><td>14K 골드 목걸이</td><td>김민정</td><td style="color:var(--gold)">450,000</td><td><span class="badge badge-success">현금</span></td></tr>
+                <tr><td>13:05</td><td>18K 귀걸이 1쌍</td><td>박서연</td><td style="color:var(--gold)">380,000</td><td><span class="badge badge-info">카드</span></td></tr>
+                <tr><td>11:30</td><td>24K 골드바 1돈</td><td>최현우</td><td style="color:var(--gold)">462,000</td><td><span class="badge badge-warn">금교환</span></td></tr>
+                <tr><td>10:15</td><td>18K 팔찌</td><td>정다은</td><td style="color:var(--gold)">290,000</td><td><span class="badge badge-info">카드</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">수리 현황</div>
+            <button class="btn btn-outline btn-sm" onclick="show('repair')">전체 보기</button>
+          </div>
+          <ul class="recent-list" style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:8px 16px;">
+            <li class="recent-item">
+              <div class="recent-left"><div class="recent-dot" style="background:var(--warn)"></div><div><div style="font-size:12px;font-weight:600">박지영 · 반지 사이즈 조절</div><div style="font-size:11px;color:var(--text-muted)">오늘 완료 예정</div></div></div>
+              <span class="badge badge-warn">완료임박</span>
+            </li>
+            <li class="recent-item">
+              <div class="recent-left"><div class="recent-dot" style="background:var(--info)"></div><div><div style="font-size:12px;font-weight:600">홍길동 · 목걸이 체인 교체</div><div style="font-size:11px;color:var(--text-muted)">3월 27일 예정</div></div></div>
+              <span class="badge badge-info">작업중</span>
+            </li>
+            <li class="recent-item">
+              <div class="recent-left"><div class="recent-dot" style="background:var(--danger)"></div><div><div style="font-size:12px;font-weight:600">김철수 · 다이아 세팅 수리</div><div style="font-size:11px;color:var(--text-muted) overdue">3월 22일 초과</div></div></div>
+              <span class="badge badge-danger">지연</span>
+            </li>
+            <li class="recent-item">
+              <div class="recent-left"><div class="recent-dot" style="background:var(--success)"></div><div><div style="font-size:12px;font-weight:600">이민지 · 각인 주문</div><div style="font-size:11px;color:var(--text-muted)">3월 28일 예정</div></div></div>
+              <span class="badge badge-gray">접수</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ AI 어시스턴트 ══ -->
+    <div id="screen-ai" class="screen">
+      <div class="ai-layout">
+        <div class="chat-wrap">
+          <div class="chat-header">
+            <div class="ai-dot"></div>
+            <div>
+              <div style="font-size:14px;font-weight:700">AI 어시스턴트</div>
+              <div style="font-size:11px;color:var(--text-muted)">재고·판매·고객 데이터를 자연어로 조회하세요</div>
+            </div>
+          </div>
+          <div class="quick-btns">
+            <div class="quick-btn">오늘 매출 요약</div>
+            <div class="quick-btn">재고 부족 상품</div>
+            <div class="quick-btn">이번 달 베스트셀러</div>
+            <div class="quick-btn">완료 안된 수리</div>
+            <div class="quick-btn">금시세 계산</div>
+          </div>
+          <div class="chat-body" id="chat-body">
+            <div class="msg msg-ai">
+              <div class="msg-bubble">안녕하세요! 주얼리 관리 AI 어시스턴트입니다. 💎<br><br>재고, 판매, 고객, 수리 현황을 자연어로 물어보세요. 금시세 기반 가격 계산도 바로 도와드립니다.</div>
+              <div class="msg-time">09:00</div>
+            </div>
+            <div class="msg msg-user">
+              <div class="msg-bubble">오늘 금시세 기준으로 18K 3돈짜리 반지 판매가 얼마야?</div>
+              <div class="msg-time">14:23</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-bubble">
+                현재 금시세 기준으로 계산해드릴게요! 📊<br><br>
+                <strong>18K 반지 3돈 판매가 계산</strong><br>
+                • 24K 시세: ₩462,000 / 돈<br>
+                • 18K 환산 (×0.75): ₩346,500 / 돈<br>
+                • 금값 소계 (3돈): ₩1,039,500<br>
+                • 공임비 (기본): ₩80,000<br>
+                ──────────────────<br>
+                <strong style="color:var(--gold)">예상 판매가: ₩1,119,500 ~ ₩1,200,000</strong><br><br>
+                스톤이나 디자인 공임이 추가되면 더 올라갈 수 있어요.
+              </div>
+              <div class="msg-time">14:23</div>
+            </div>
+            <div class="msg msg-user">
+              <div class="msg-bubble">이번 달 어떤 상품이 제일 많이 팔렸어?</div>
+              <div class="msg-time">14:25</div>
+            </div>
+            <div class="msg msg-ai">
+              <div class="msg-bubble">
+                3월 판매 데이터 분석 결과입니다! 🏆<br><br>
+                <strong>이번 달 베스트셀러 TOP 3</strong><br>
+                🥇 18K 다이아 반지 — 12건 (₩9,840,000)<br>
+                🥈 14K 골드 목걸이 — 9건 (₩4,050,000)<br>
+                🥉 18K 귀걸이 — 7건 (₩2,660,000)<br><br>
+                💡 작년 같은 기간 대비 반지 카테고리가 +23% 성장했어요. 화이트데이 효과로 보입니다.
+              </div>
+              <div class="msg-time">14:25</div>
+            </div>
+          </div>
+          <div class="chat-footer">
+            <input class="chat-input" id="chat-input" placeholder="자연어로 질문하세요... (예: 홍길동 고객 마지막 구매가 언제야?)" onkeydown="if(event.key==='Enter')sendMsg()">
+            <button class="chat-send" onclick="sendMsg()">전송</button>
+          </div>
+        </div>
+        <div class="ai-stats-col">
+          <div class="card">
+            <div class="card-title">🔮 AI 예측 발주 추천</div>
+            <div style="margin-top:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
+                <span>18K 목걸이</span><span class="badge badge-danger">재고 2개</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
+                <span>14K 반지 5호</span><span class="badge badge-warn">재고 4개</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:12px">
+                <span>18K 팔찌</span><span class="badge badge-warn">재고 3개</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📅 이번 주 알림</div>
+            <div style="margin-top:8px;font-size:12px;display:flex;flex-direction:column;gap:8px">
+              <div style="padding:8px;background:var(--dark3);border-radius:6px;border-left:3px solid var(--warn)">
+                ⚠️ 박지영 수리 완료 알림 미발송
+              </div>
+              <div style="padding:8px;background:var(--dark3);border-radius:6px;border-left:3px solid var(--danger)">
+                🚨 김철수 수리 3일 초과 지연
+              </div>
+              <div style="padding:8px;background:var(--dark3);border-radius:6px;border-left:3px solid var(--info)">
+                🎂 이수진 고객 생일 (3/28)
+              </div>
+              <div style="padding:8px;background:var(--dark3);border-radius:6px;border-left:3px solid var(--success)">
+                💰 ㈜골드세공 미지급 잔액 확인
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 오늘 요약</div>
+            <div style="font-size:12px;margin-top:8px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">매출</span><span style="color:var(--gold);font-weight:700">₩3,240,000</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">판매건</span><span>7건</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">객단가</span><span>₩462,857</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">수리접수</span><span>2건</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">수리완료</span><span>1건</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 판매 POS ══ -->
+    <div id="screen-pos" class="screen">
+      <div class="pos-layout">
+        <div class="pos-left">
+          <!-- 바코드 스캔 바 -->
+          <div style="display:flex;gap:8px;align-items:center;background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;">
+            <span style="font-size:18px;">📷</span>
+            <input class="input" id="pos-barcode" placeholder="바코드 스캔 or 직접입력 후 Enter..." style="flex:1;font-family:monospace;background:transparent;border:none;font-size:13px;"
+              onkeydown="if(event.key==='Enter') posBarcodeScan()">
+            <button onclick="posBarcodeScan()" style="background:var(--gold);border:none;color:var(--dark);padding:6px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;">스캔</button>
+            <span style="color:var(--text-muted);font-size:11px;white-space:nowrap;">또는</span>
+            <button onclick="alert('카메라로 상품 촬영 → AI 유사상품 검색')" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:6px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;">✨ AI 사진 검색</button>
+          </div>
+          <!-- 검색 필터 -->
+          <div class="search-bar" style="margin-top:8px;">
+            <input class="input" placeholder="🔍 상품명, 함량 검색..." style="flex:1">
+            <select class="input"><option>전체 품목</option><option>반지</option><option>목걸이</option><option>귀걸이</option><option>팔찌</option><option>골드바</option></select>
+            <select class="input"><option>전체 함량</option><option>14K</option><option>18K</option><option>24K</option></select>
+            <button onclick="openQuickProductModal()" style="background:var(--dark3);border:1px solid var(--gold-dark);color:var(--gold);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">+ 빠른 등록</button>
+            <!-- 고객 선택 -->
+            <select class="input" style="width:140px;" onchange="selectCustomer(this.value)">
+              <option value="">👤 비회원</option>
+              <option value="김철수">김철수 (VIP · 포인트 12,500)</option>
+              <option value="이수진">이수진 (골드 · 포인트 3,200)</option>
+              <option value="박지영">박지영 (실버 · 포인트 800)</option>
+            </select>
+          </div>
+          <div class="product-grid">
+            <div class="product-card" onclick="addCart('18K 다이아 반지','💍','18K 3.2g','820,000')">
+              <div class="product-emoji">💍</div>
+              <div class="product-name">18K 다이아 반지</div>
+              <div class="product-spec">18K · 3.2g · 11호</div>
+              <div class="product-price">₩820,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('14K 골드 목걸이','📿','14K 5.1g','450,000')">
+              <div class="product-emoji">📿</div>
+              <div class="product-name">14K 골드 목걸이</div>
+              <div class="product-spec">14K · 5.1g · 42cm</div>
+              <div class="product-price">₩450,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('18K 귀걸이','✨','18K 2.4g','380,000')">
+              <div class="product-emoji">✨</div>
+              <div class="product-name">18K 귀걸이 1쌍</div>
+              <div class="product-spec">18K · 2.4g · 볼타입</div>
+              <div class="product-price">₩380,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('24K 골드바 1돈','🟡','24K 3.75g','462,000')">
+              <div class="product-emoji">🟡</div>
+              <div class="product-name">24K 골드바 1돈</div>
+              <div class="product-spec">24K · 3.75g · 순금</div>
+              <div class="product-price">₩462,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('18K 팔찌','💫','18K 6.8g','290,000')">
+              <div class="product-emoji">💫</div>
+              <div class="product-name">18K 팔찌</div>
+              <div class="product-spec">18K · 6.8g · 체인형</div>
+              <div class="product-price">₩290,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('14K 진주 귀걸이','🤍','14K 1.8g','230,000')">
+              <div class="product-emoji">🤍</div>
+              <div class="product-name">14K 진주 귀걸이</div>
+              <div class="product-spec">14K · 1.8g · 진주7mm</div>
+              <div class="product-price">₩230,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('18K 커플링','💑','18K 4.0g×2','560,000')">
+              <div class="product-emoji">💑</div>
+              <div class="product-name">18K 커플링 세트</div>
+              <div class="product-spec">18K · 4.0g×2 · 11/13호</div>
+              <div class="product-price">₩560,000</div>
+            </div>
+            <div class="product-card" onclick="addCart('루비 펜던트','❤️','18K 2.1g 루비','680,000')">
+              <div class="product-emoji">❤️</div>
+              <div class="product-name">18K 루비 펜던트</div>
+              <div class="product-spec">18K · 2.1g · 루비0.8ct</div>
+              <div class="product-price">₩680,000</div>
+            </div>
+          </div>
+        </div>
+        <div class="pos-right">
+          <div class="pos-cart-header">
+            🛒 장바구니
+            <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px" id="cart-customer">고객 미선택</span>
+          </div>
+          <div class="pos-cart-body" id="cart-body">
+            <div style="text-align:center;color:var(--text-muted);padding:40px 20px;font-size:13px">
+              상품을 클릭하면<br>장바구니에 추가됩니다
+            </div>
+          </div>
+          <div class="pos-cart-footer">
+            <div class="total-row"><span>소계</span><span id="subtotal">₩0</span></div>
+            <div class="total-row"><span>등급할인 <span style="color:var(--gold);font-size:10px" id="grade-label"></span></span><span style="color:var(--danger)" id="discount-row">-₩0</span></div>
+            <div class="total-row"><span>포인트 사용</span>
+              <span style="display:flex;align-items:center;gap:4px;">
+                <input id="point-input" style="width:80px;background:var(--dark3);border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:4px;font-size:12px;text-align:right;" placeholder="0" type="number" min="0">
+                <span style="font-size:11px;color:var(--text-muted);">P</span>
+              </span>
+            </div>
+            <div class="total-row"><span>금교환</span>
+              <span style="display:flex;align-items:center;gap:4px;">
+                <input id="gold-input" style="width:80px;background:var(--dark3);border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:4px;font-size:12px;text-align:right;" placeholder="0" type="number" min="0">
+                <span style="font-size:11px;color:var(--text-muted);">원</span>
+              </span>
+            </div>
+            <div class="total-row grand"><span>최종 결제금액</span><span id="grand-total">₩0</span></div>
+            <div class="pay-btns">
+              <div class="pay-btn" onclick="alert('카드 결제')">💳 카드</div>
+              <div class="pay-btn" onclick="alert('현금+카드 혼합')">💰 혼합</div>
+              <div class="pay-btn cash" onclick="alert('현금 결제 완료 → 영수증 출력')">💵 현금 결제 · 영수증 출력</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 재고 관리 ══ -->
+    <div id="screen-inventory" class="screen">
+      <style>
+        .inv-layout { display:flex; gap:18px; height:calc(100vh - 110px); }
+        .inv-form-panel { width:380px; flex-shrink:0; background:var(--dark2); border:1px solid var(--border); border-radius:12px; overflow-y:auto; padding:20px; }
+        .inv-list-panel { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .inv-section { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin:14px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+        .inv-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+        .inv-row.full { grid-template-columns:1fr; }
+        .inv-field { display:flex; flex-direction:column; gap:4px; }
+        .inv-field label { font-size:11px; color:var(--text-muted); font-weight:600; }
+        .inv-field input, .inv-field select, .inv-field textarea { background:var(--dark3); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
+        .inv-field input:focus, .inv-field select:focus { border-color:var(--gold); }
+        .inv-field textarea { resize:vertical; min-height:52px; }
+        .inv-field input[readonly] { background:var(--dark4); color:var(--text-muted); }
+        .inv-form-title { font-size:15px; font-weight:700; color:var(--gold); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .inv-form-btns { display:flex; gap:10px; margin-top:18px; }
+        .inv-list-search { display:flex; gap:8px; margin-bottom:12px; align-items:center; flex-wrap:wrap; }
+        .inv-table-wrap { flex:1; overflow-y:auto; background:var(--dark2); border:1px solid var(--border); border-radius:10px; }
+        .inv-table-wrap table { width:100%; border-collapse:collapse; }
+        .inv-table-wrap thead th { background:var(--dark3); padding:10px 12px; font-size:11px; color:var(--text-muted); font-weight:700; text-align:left; position:sticky; top:0; }
+        .inv-table-wrap tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:.15s; }
+        .inv-table-wrap tbody tr:hover { background:var(--dark3); }
+        .inv-table-wrap tbody tr.selected { background:rgba(201,168,76,.12); border-left:3px solid var(--gold); }
+        .inv-table-wrap td { padding:9px 12px; font-size:13px; vertical-align:middle; }
+        .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+        .barcode-box { display:flex; gap:6px; align-items:center; }
+        .barcode-box input { flex:1; font-family:monospace; }
+        .barcode-scan-btn { background:var(--dark4); border:1px solid var(--border); color:var(--gold); border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; white-space:nowrap; }
+        .cert-upload { background:var(--dark3); border:1px dashed var(--border); border-radius:6px; padding:10px; text-align:center; cursor:pointer; font-size:12px; color:var(--text-muted); }
+        .cert-upload:hover { border-color:var(--gold); }
+        .inv-summary { display:flex; gap:10px; margin-bottom:12px; }
+        .inv-stat { background:var(--dark2); border:1px solid var(--border); border-radius:8px; padding:10px 16px; flex:1; text-align:center; }
+        .inv-stat-num { font-size:20px; font-weight:900; color:var(--gold); }
+        .inv-stat-label { font-size:11px; color:var(--text-muted); margin-top:2px; }
+      </style>
+
+      <div class="inv-layout">
+        <!-- 왼쪽: 등록/수정 폼 -->
+        <div class="inv-form-panel">
+          <div class="inv-form-title">
+            <span>🏷️</span>
+            <span id="inv-form-mode">신규 아이템 등록</span>
+          </div>
+
+          <!-- 바코드 -->
+          <div class="inv-section">바코드</div>
+          <div class="inv-row full">
+            <div class="inv-field">
+              <label>바코드 <span style="color:var(--text-muted);font-weight:400">(자동생성 or 스캐너 입력)</span></label>
+              <div class="barcode-box">
+                <input id="iv-barcode" placeholder="BR01-PRD0001-001" style="font-family:monospace">
+                <button class="barcode-scan-btn" onclick="alert('스캐너 연결')">📷 스캔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 상품 연결 -->
+          <div class="inv-section">상품 연결</div>
+          <div class="inv-row full">
+            <div class="inv-field">
+              <label>상품 마스터 *</label>
+              <select id="iv-product">
+                <option>-- 상품 선택 --</option>
+                <option>PRD-0001 · 다이아 솔리테어 반지 18K</option>
+                <option>PRD-0002 · 골드 체인 목걸이 14K</option>
+                <option>PRD-0003 · 진주 드롭 귀걸이 14K</option>
+              </select>
+            </div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-field">
+              <label>실측 중량 (g)</label>
+              <input id="iv-weight" placeholder="3.18" type="number" step="0.01">
+            </div>
+            <div class="inv-field">
+              <label>실제 판매가 (원)</label>
+              <input id="iv-price" placeholder="마스터가 적용" type="number">
+            </div>
+          </div>
+
+          <!-- 상태/위치 -->
+          <div class="inv-section">상태 / 위치</div>
+          <div class="inv-row">
+            <div class="inv-field">
+              <label>상태 *</label>
+              <select id="iv-status">
+                <option value="진열중">🟢 진열중</option>
+                <option value="창고">📦 창고</option>
+                <option value="수리중">🔧 수리중</option>
+                <option value="반품">↩️ 반품</option>
+                <option value="분실">❌ 분실</option>
+                <option value="판매완료">✅ 판매완료</option>
+              </select>
+            </div>
+            <div class="inv-field">
+              <label>위치</label>
+              <select id="iv-location">
+                <option>-- 선택 --</option>
+                <option>1번 진열장</option>
+                <option>2번 진열장</option>
+                <option>3번 진열장</option>
+                <option>A창고</option>
+                <option>B창고</option>
+              </select>
+            </div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-field">
+              <label>입고일 *</label>
+              <input id="iv-received" type="date" value="2026-03-27">
+            </div>
+            <div class="inv-field">
+              <label>판매일시</label>
+              <input id="iv-sold" readonly placeholder="판매시 자동기록">
+            </div>
+          </div>
+
+          <!-- 보증서/감정서 -->
+          <div class="inv-section">보증서 / 감정서</div>
+          <div class="inv-row">
+            <div class="inv-field">
+              <label>서류 종류</label>
+              <select id="iv-cert-type">
+                <option>없음</option>
+                <option>보증서</option>
+                <option>GIA 감정서</option>
+                <option>한국보석감정원</option>
+                <option>원산지증명서</option>
+              </select>
+            </div>
+            <div class="inv-field">
+              <label>서류 번호</label>
+              <input id="iv-cert-no" placeholder="GIA-12345678">
+            </div>
+          </div>
+          <div class="inv-row full">
+            <div class="cert-upload" onclick="alert('감정서 사진 S3 업로드')">
+              📄 감정서 사진 첨부 (S3)<br>
+              <span style="font-size:10px">JPG/PNG/PDF</span>
+            </div>
+          </div>
+
+          <!-- 메모 -->
+          <div class="inv-section">메모</div>
+          <div class="inv-row full">
+            <div class="inv-field">
+              <textarea id="iv-memo" placeholder="특이사항 입력"></textarea>
+            </div>
+          </div>
+
+          <div class="inv-form-btns">
+            <button class="btn btn-outline" style="flex:1" onclick="invClear()">신규</button>
+            <button class="btn" style="flex:1;background:var(--dark4);color:var(--text-muted)">바코드출력</button>
+            <button class="btn btn-gold" style="flex:2" onclick="alert('저장')">💾 저장</button>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 목록 -->
+        <div class="inv-list-panel">
+          <!-- 요약 통계 -->
+          <div class="inv-summary">
+            <div class="inv-stat"><div class="inv-stat-num" style="color:var(--success)">142</div><div class="inv-stat-label">진열중</div></div>
+            <div class="inv-stat"><div class="inv-stat-num" style="color:var(--info)">38</div><div class="inv-stat-label">창고</div></div>
+            <div class="inv-stat"><div class="inv-stat-num" style="color:var(--warn)">7</div><div class="inv-stat-label">수리중</div></div>
+            <div class="inv-stat"><div class="inv-stat-num">187</div><div class="inv-stat-label">전체 아이템</div></div>
+          </div>
+
+          <div class="inv-list-search">
+            <input class="input" placeholder="🔍 바코드, 상품명 검색..." style="flex:1;min-width:160px">
+            <select class="input" style="width:100px"><option>전체 상태</option><option>진열중</option><option>창고</option><option>수리중</option></select>
+            <select class="input" style="width:100px"><option>전체 분류</option><option>반지</option><option>목걸이</option><option>귀걸이</option></select>
+            <select class="input" style="width:95px"><option>전체 위치</option><option>1번 진열장</option><option>2번 진열장</option><option>A창고</option></select>
+            <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">187건</span>
+          </div>
+
+          <div class="inv-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>바코드</th>
+                  <th>상품명</th>
+                  <th>함량</th>
+                  <th>실측중량</th>
+                  <th>판매가</th>
+                  <th>상태</th>
+                  <th>위치</th>
+                  <th>보증서</th>
+                  <th>입고일</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="selected" onclick="loadInv(this)">
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0001-001</td>
+                  <td><strong>다이아 솔리테어 반지</strong></td>
+                  <td><span class="badge badge-gold">18K</span></td>
+                  <td>3.18g</td>
+                  <td style="color:var(--gold);font-weight:700">820,000</td>
+                  <td><span class="status-dot" style="background:var(--success)"></span>진열중</td>
+                  <td style="font-size:12px;color:var(--text-muted)">1번 진열장</td>
+                  <td><span class="badge" style="background:rgba(76,140,232,.2);color:var(--info);font-size:10px">GIA</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-10</td>
+                </tr>
+                <tr onclick="loadInv(this)">
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0001-002</td>
+                  <td><strong>다이아 솔리테어 반지</strong></td>
+                  <td><span class="badge badge-gold">18K</span></td>
+                  <td>3.22g</td>
+                  <td style="color:var(--gold);font-weight:700">825,000</td>
+                  <td><span class="status-dot" style="background:var(--success)"></span>진열중</td>
+                  <td style="font-size:12px;color:var(--text-muted)">2번 진열장</td>
+                  <td><span class="badge" style="background:rgba(76,140,232,.2);color:var(--info);font-size:10px">GIA</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-10</td>
+                </tr>
+                <tr onclick="loadInv(this)">
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0002-001</td>
+                  <td><strong>골드 체인 목걸이</strong></td>
+                  <td><span class="badge badge-warn">14K</span></td>
+                  <td>5.08g</td>
+                  <td style="color:var(--gold);font-weight:700">450,000</td>
+                  <td><span class="status-dot" style="background:var(--info)"></span>창고</td>
+                  <td style="font-size:12px;color:var(--text-muted)">A창고</td>
+                  <td><span class="badge" style="background:rgba(136,136,170,.1);color:var(--text-muted);font-size:10px">보증서</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-12</td>
+                </tr>
+                <tr onclick="loadInv(this)">
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0003-001</td>
+                  <td><strong>진주 드롭 귀걸이</strong></td>
+                  <td><span class="badge badge-warn">14K</span></td>
+                  <td>1.82g</td>
+                  <td style="color:var(--gold);font-weight:700">230,000</td>
+                  <td><span class="status-dot" style="background:var(--warn)"></span>수리중</td>
+                  <td style="font-size:12px;color:var(--text-muted)">-</td>
+                  <td><span class="badge" style="background:rgba(136,136,170,.1);color:var(--text-muted);font-size:10px">없음</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-02-20</td>
+                </tr>
+                <tr onclick="loadInv(this)">
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0001-003</td>
+                  <td><strong>다이아 솔리테어 반지</strong></td>
+                  <td><span class="badge badge-gold">18K</span></td>
+                  <td>3.15g</td>
+                  <td style="color:var(--gold);font-weight:700">815,000</td>
+                  <td><span class="status-dot" style="background:var(--success)"></span><span style="color:var(--success)">판매완료</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">-</td>
+                  <td><span class="badge" style="background:rgba(76,140,232,.2);color:var(--info);font-size:10px">GIA</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-01</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 입고 관리 ══ -->
+    <div id="screen-incoming" class="screen">
+      <style>
+        .inc-layout { display:flex; gap:18px; height:calc(100vh - 110px); }
+        .inc-form { width:420px; flex-shrink:0; background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:20px; overflow-y:auto; }
+        .inc-list { flex:1; display:flex; flex-direction:column; }
+        .inc-sec { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin:14px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+        .inc-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+        .inc-row.full { grid-template-columns:1fr; }
+        .inc-row.tri { grid-template-columns:1fr 1fr 1fr; }
+        .inc-field { display:flex; flex-direction:column; gap:4px; }
+        .inc-field label { font-size:11px; color:var(--text-muted); font-weight:600; }
+        .inc-field input, .inc-field select { background:var(--dark3); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
+        .inc-field input:focus, .inc-field select:focus { border-color:var(--gold); }
+        .inc-field input[readonly] { background:var(--dark4); color:var(--text-muted); }
+        .inc-ai-btn { background:linear-gradient(135deg,#1a1a2e,#0f3460); border:1px solid rgba(201,168,76,.4); color:var(--gold); border-radius:8px; padding:8px 14px; cursor:pointer; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
+        .inc-table-wrap { flex:1; overflow-y:auto; background:var(--dark2); border:1px solid var(--border); border-radius:10px; }
+        .inc-table-wrap table { width:100%; border-collapse:collapse; }
+        .inc-table-wrap thead th { background:var(--dark3); padding:10px 12px; font-size:11px; color:var(--text-muted); font-weight:700; text-align:left; position:sticky; top:0; }
+        .inc-table-wrap tbody tr { border-bottom:1px solid var(--border); transition:.15s; }
+        .inc-table-wrap tbody tr:hover { background:var(--dark3); }
+        .inc-table-wrap td { padding:10px 12px; font-size:13px; }
+        .inc-summary { display:flex; gap:10px; margin-bottom:12px; }
+        .inc-stat { background:var(--dark2); border:1px solid var(--border); border-radius:8px; padding:10px 16px; flex:1; text-align:center; }
+        .inc-stat-num { font-size:20px; font-weight:900; color:var(--gold); }
+        .inc-stat-label { font-size:11px; color:var(--text-muted); }
+      </style>
+      <div class="inc-layout">
+        <div class="inc-form">
+          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+            <span>📥</span> 신규 입고 등록
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">입고 등록 시 InventoryItem(바코드) 자동 생성</div>
+
+          <!-- AI 사진 분석 -->
+          <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:12px;color:var(--gold);font-weight:700;">📷 AI 사진 분석</div>
+              <div style="font-size:11px;color:#88aacc;margin-top:2px;">상품 사진 찍으면 아래 정보 자동완성</div>
+            </div>
+            <button class="inc-ai-btn" onclick="alert('카메라 실행 → Claude Vision 분석')">✨ 사진 촬영</button>
+          </div>
+
+          <div class="inc-sec">매입처 / 입고일</div>
+          <div class="inc-row">
+            <div class="inc-field">
+              <label>매입처 *</label>
+              <select><option>서울골드사</option><option>동양주얼리</option><option>KJ무역</option><option>한국금거래소</option></select>
+            </div>
+            <div class="inc-field">
+              <label>입고일 *</label>
+              <input type="date" value="2026-03-27">
+            </div>
+          </div>
+
+          <div class="inc-sec">상품 연결</div>
+          <div class="inc-row full">
+            <div class="inc-field">
+              <label>상품 마스터 *</label>
+              <select>
+                <option>-- 기존 상품 선택 --</option>
+                <option>PRD-0001 · 다이아 솔리테어 반지 18K</option>
+                <option>PRD-0002 · 골드 체인 목걸이 14K</option>
+                <option>PRD-0003 · 진주 드롭 귀걸이 14K</option>
+                <option>--- 신규 상품으로 등록 ---</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inc-sec">개별 아이템 정보</div>
+          <div class="inc-row">
+            <div class="inc-field">
+              <label>입고 수량 *</label>
+              <input type="number" value="1" min="1">
+            </div>
+            <div class="inc-field">
+              <label>생성될 바코드 수</label>
+              <input readonly value="1개 자동생성" style="background:var(--dark4);color:var(--text-muted);">
+            </div>
+          </div>
+          <div class="inc-row tri">
+            <div class="inc-field">
+              <label>실측 중량(g)</label>
+              <input type="number" step="0.01" placeholder="3.18">
+            </div>
+            <div class="inc-field">
+              <label>매입단가(원)</label>
+              <input type="number" placeholder="480000">
+            </div>
+            <div class="inc-field">
+              <label>판매가(원)</label>
+              <input type="number" placeholder="820000" style="color:var(--gold);">
+            </div>
+          </div>
+          <div class="inc-row">
+            <div class="inc-field">
+              <label>진열 위치</label>
+              <select><option>1번 진열장</option><option>2번 진열장</option><option>A창고</option></select>
+            </div>
+            <div class="inc-field">
+              <label>보증서 종류</label>
+              <select><option>없음</option><option>보증서</option><option>GIA 감정서</option><option>한국보석감정원</option></select>
+            </div>
+          </div>
+
+          <div class="inc-sec">매입 결제</div>
+          <div class="inc-row">
+            <div class="inc-field">
+              <label>결제 조건</label>
+              <select><option>현금</option><option>금교환</option><option>혼합</option><option>어음</option></select>
+            </div>
+            <div class="inc-field">
+              <label>결제 금액(원)</label>
+              <input type="number" placeholder="480000">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn btn-outline" style="flex:1;">초기화</button>
+            <button class="btn btn-gold" style="flex:2;" onclick="alert('입고 등록 완료 → 바코드 1개 자동 생성')">📥 입고 등록 + 바코드 출력</button>
+          </div>
+        </div>
+
+        <div class="inc-list">
+          <div class="inc-summary">
+            <div class="inc-stat"><div class="inc-stat-num">28</div><div class="inc-stat-label">이번달 입고</div></div>
+            <div class="inc-stat"><div class="inc-stat-num" style="color:var(--success)">28</div><div class="inc-stat-label">생성된 바코드</div></div>
+            <div class="inc-stat"><div class="inc-stat-num" style="color:var(--info)">4</div><div class="inc-stat-label">매입처</div></div>
+            <div class="inc-stat"><div class="inc-stat-num" style="color:var(--warn)">12,400,000</div><div class="inc-stat-label">매입 합계(원)</div></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input class="input" placeholder="🔍 상품명, 매입처 검색..." style="flex:1;">
+            <select class="input" style="width:110px;"><option>전체 매입처</option><option>서울골드사</option><option>동양주얼리</option><option>KJ무역</option></select>
+            <select class="input" style="width:100px;"><option>이번달</option><option>지난달</option><option>전체</option></select>
+          </div>
+          <div class="inc-table-wrap">
+            <table>
+              <thead><tr><th>입고일</th><th>상품명</th><th>함량</th><th>실측중량</th><th>바코드</th><th>매입처</th><th>매입가</th><th>판매가</th><th>위치</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="color:var(--text-muted)">03-27</td>
+                  <td><strong>다이아 솔리테어 반지</strong></td>
+                  <td><span class="badge badge-gold">18K</span></td>
+                  <td>3.18g</td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0001-003</td>
+                  <td>서울골드사</td>
+                  <td>480,000</td>
+                  <td style="color:var(--gold);font-weight:700;">820,000</td>
+                  <td style="font-size:12px;color:var(--text-muted)">1번 진열장</td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-muted)">03-25</td>
+                  <td><strong>골드 체인 목걸이</strong></td>
+                  <td><span class="badge badge-warn">14K</span></td>
+                  <td>5.08g</td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0002-002</td>
+                  <td>동양주얼리</td>
+                  <td>200,000</td>
+                  <td style="color:var(--gold);font-weight:700;">450,000</td>
+                  <td style="font-size:12px;color:var(--text-muted)">A창고</td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-muted)">03-22</td>
+                  <td><strong>진주 드롭 귀걸이</strong></td>
+                  <td><span class="badge badge-warn">14K</span></td>
+                  <td>1.82g</td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0003-002</td>
+                  <td>KJ무역</td>
+                  <td>90,000</td>
+                  <td style="color:var(--gold);font-weight:700;">230,000</td>
+                  <td style="font-size:12px;color:var(--text-muted)">2번 진열장</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 매장간 이동 ══ -->
+    <div id="screen-transfer" class="screen">
+      <style>
+        .tf-layout { display:flex; gap:18px; height:calc(100vh - 110px); }
+        .tf-form-panel { width:400px; flex-shrink:0; background:var(--dark2); border:1px solid var(--border); border-radius:12px; padding:20px; overflow-y:auto; }
+        .tf-list-panel { flex:1; display:flex; flex-direction:column; }
+        .tf-section { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin:14px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+        .tf-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+        .tf-row.full { grid-template-columns:1fr; }
+        .tf-field { display:flex; flex-direction:column; gap:4px; }
+        .tf-field label { font-size:11px; color:var(--text-muted); font-weight:600; }
+        .tf-field input, .tf-field select, .tf-field textarea { background:var(--dark3); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
+        .tf-field input:focus, .tf-field select:focus { border-color:var(--gold); }
+        .tf-arrow { text-align:center; font-size:24px; color:var(--gold); padding:8px 0; }
+        .tf-table-wrap { flex:1; overflow-y:auto; background:var(--dark2); border:1px solid var(--border); border-radius:10px; }
+        .tf-table-wrap table { width:100%; border-collapse:collapse; }
+        .tf-table-wrap thead th { background:var(--dark3); padding:10px 12px; font-size:11px; color:var(--text-muted); font-weight:700; text-align:left; position:sticky; top:0; }
+        .tf-table-wrap tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:.15s; }
+        .tf-table-wrap tbody tr:hover { background:var(--dark3); }
+        .tf-table-wrap td { padding:10px 12px; font-size:13px; }
+        .tf-summary { display:flex; gap:10px; margin-bottom:12px; }
+        .tf-stat { background:var(--dark2); border:1px solid var(--border); border-radius:8px; padding:10px 16px; flex:1; text-align:center; }
+        .tf-stat-num { font-size:20px; font-weight:900; color:var(--gold); }
+        .tf-stat-label { font-size:11px; color:var(--text-muted); }
+      </style>
+      <div class="tf-layout">
+        <!-- 왼쪽: 이동 등록 폼 -->
+        <div class="tf-form-panel">
+          <div style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <span>🔄</span> 재고 이동 등록
+          </div>
+          <div class="tf-section">이동 경로</div>
+          <div style="background:var(--dark3);border-radius:10px;padding:14px;margin-bottom:10px;">
+            <div class="tf-row">
+              <div class="tf-field">
+                <label>출고 매장 (보내는 곳)</label>
+                <select><option>강남점 (현재)</option><option>홍대점</option><option>수원점</option></select>
+              </div>
+              <div class="tf-field">
+                <label>입고 매장 (받는 곳)</label>
+                <select><option>홍대점</option><option>강남점</option><option>수원점</option></select>
+              </div>
+            </div>
+            <div class="tf-arrow">↓ 이동 →</div>
+          </div>
+          <div class="tf-section">이동 상품</div>
+          <div class="tf-row full">
+            <div class="tf-field">
+              <label>바코드 스캔 or 검색</label>
+              <div style="display:flex;gap:6px;">
+                <input placeholder="바코드 입력 or 검색..." style="flex:1;font-family:monospace;">
+                <button style="background:var(--dark4);border:1px solid var(--border);color:var(--gold);border-radius:6px;padding:6px 10px;cursor:pointer;white-space:nowrap;">📷 스캔</button>
+              </div>
+            </div>
+          </div>
+          <!-- 선택된 아이템 목록 -->
+          <div style="background:var(--dark3);border-radius:8px;padding:12px;margin-bottom:10px;">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:700;">이동 목록</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-size:12px;font-weight:600;">다이아 솔리테어 반지 18K</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">BR01-PRD0001-001</div>
+              </div>
+              <span style="color:var(--danger);cursor:pointer;">✕</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+              <div>
+                <div style="font-size:12px;font-weight:600;">골드 체인 목걸이 14K</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">BR01-PRD0002-001</div>
+              </div>
+              <span style="color:var(--danger);cursor:pointer;">✕</span>
+            </div>
+          </div>
+          <div class="tf-row full">
+            <div class="tf-field">
+              <label>메모</label>
+              <textarea placeholder="이동 사유 등 메모" style="min-height:52px;resize:vertical;"></textarea>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn btn-outline" style="flex:1;">초기화</button>
+            <button class="btn btn-gold" style="flex:2;" onclick="alert('이동 요청 완료')">🔄 이동 요청</button>
+          </div>
+        </div>
+        <!-- 오른쪽: 이동 이력 -->
+        <div class="tf-list-panel">
+          <div class="tf-summary">
+            <div class="tf-stat"><div class="tf-stat-num" style="color:var(--warn)">3</div><div class="tf-stat-label">요청중</div></div>
+            <div class="tf-stat"><div class="tf-stat-num" style="color:var(--info)">5</div><div class="tf-stat-label">이동중</div></div>
+            <div class="tf-stat"><div class="tf-stat-num" style="color:var(--success)">42</div><div class="tf-stat-label">완료</div></div>
+            <div class="tf-stat"><div class="tf-stat-num">50</div><div class="tf-stat-label">이번달 전체</div></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input class="input" placeholder="🔍 바코드, 상품명 검색..." style="flex:1;">
+            <select class="input" style="width:110px;"><option>전체 상태</option><option>요청중</option><option>이동중</option><option>완료</option><option>취소</option></select>
+            <select class="input" style="width:110px;"><option>전체 매장</option><option>강남점</option><option>홍대점</option><option>수원점</option></select>
+          </div>
+          <div class="tf-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>이동번호</th><th>상품명</th><th>바코드</th><th>출고매장</th><th>입고매장</th><th>상태</th><th>요청일</th><th>완료일</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">TF-2026-001</td>
+                  <td><strong>다이아 솔리테어 반지</strong></td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0001-002</td>
+                  <td>강남점</td><td>홍대점</td>
+                  <td><span class="badge badge-warn">이동중</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-27</td>
+                  <td style="font-size:12px;color:var(--text-muted)">-</td>
+                </tr>
+                <tr>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">TF-2026-002</td>
+                  <td><strong>진주 드롭 귀걸이</strong></td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0003-001</td>
+                  <td>강남점</td><td>수원점</td>
+                  <td><span class="badge badge-success">완료</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-25</td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-26</td>
+                </tr>
+                <tr>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">TF-2026-003</td>
+                  <td><strong>골드 체인 목걸이</strong></td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">BR01-PRD0002-003</td>
+                  <td>수원점</td><td>강남점</td>
+                  <td><span class="badge badge-warn">요청중</span></td>
+                  <td style="font-size:12px;color:var(--text-muted)">2026-03-27</td>
+                  <td style="font-size:12px;color:var(--text-muted)">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 고객 관리 ══ -->
+    <div id="screen-customers" class="screen">
+
+      <!-- 고객관리 전용 탭 -->
+      <div style="display:flex;align-items:center;gap:4px;background:var(--dark3);border-bottom:1px solid var(--border);margin:-16px -20px 16px;padding:0 20px;">
+        <div id="ctab-list"   class="sub-tab active"  onclick="showCustTab('list')"   >👥 고객 목록</div>
+        <div id="ctab-info"   class="sub-tab"         onclick="showCustTab('info')"    style="display:none;">📋 고객 정보</div>
+        <div id="ctab-history"class="sub-tab"         onclick="showCustTab('history')" style="display:none;">🛒 구매 이력</div>
+        <div id="ctab-qr"     class="sub-tab"         onclick="showCustTab('qr')"      >📱 고객용 QR</div>
+        <div style="flex:1;"></div>
+        <button class="btn btn-gold" style="margin:6px 0;" onclick="openCustomerModal()">+ 고객 등록</button>
+      </div>
+
+      <!-- ① 고객 목록 탭 -->
+      <div id="cpanel-list">
+        <div class="search-bar" style="margin-bottom:10px;">
+          <input class="input" placeholder="🔍 고객명, 연락처 검색..." style="flex:1">
+          <select class="input"><option>전체 등급</option><option>VIP</option><option>골드</option><option>실버</option><option>일반</option></select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:44px;"></th><th>이름</th><th>연락처</th><th>등급</th><th>누적구매</th><th>최근방문</th><th></th></tr></thead>
+            <tbody>
+              <tr style="cursor:pointer" onclick="selectCustomerRow('이수진')">
+                <td><div style="width:32px;height:32px;border-radius:50%;background:var(--dark3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">👤</div></td>
+                <td><strong>이수진</strong></td><td>010-1234-5678</td>
+                <td><span class="badge badge-gold">VIP</span></td>
+                <td style="color:var(--gold)">12,450,000</td><td>오늘</td>
+                <td><button onclick="event.stopPropagation();goPosWith('이수진')" style="background:#3A6FC4;border:none;color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;">판매 →</button></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="selectCustomerRow('박지영')">
+                <td><div style="width:32px;height:32px;border-radius:50%;background:var(--dark3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">👤</div></td>
+                <td><strong>박지영</strong></td><td>010-2345-6789</td>
+                <td><span class="badge badge-info">골드</span></td>
+                <td style="color:var(--gold)">4,820,000</td><td>3일 전</td>
+                <td><button onclick="event.stopPropagation();goPosWith('박지영')" style="background:#3A6FC4;border:none;color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;">판매 →</button></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="selectCustomerRow('홍길동')">
+                <td><div style="width:32px;height:32px;border-radius:50%;background:var(--dark3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">👤</div></td>
+                <td><strong>홍길동</strong></td><td>010-3456-7890</td>
+                <td><span class="badge badge-gray">실버</span></td>
+                <td style="color:var(--gold)">1,930,000</td><td>1주 전</td>
+                <td><button onclick="event.stopPropagation();goPosWith('홍길동')" style="background:#3A6FC4;border:none;color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;">판매 →</button></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="selectCustomerRow('김민정')">
+                <td><div style="width:32px;height:32px;border-radius:50%;background:var(--dark3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">👤</div></td>
+                <td><strong>김민정</strong></td><td>010-4567-8901</td>
+                <td><span class="badge badge-gray">일반</span></td>
+                <td style="color:var(--gold)">450,000</td><td>오늘</td>
+                <td><button onclick="event.stopPropagation();goPosWith('김민정')" style="background:#3A6FC4;border:none;color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;">판매 →</button></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="selectCustomerRow('최현우')">
+                <td><div style="width:32px;height:32px;border-radius:50%;background:var(--dark3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">👤</div></td>
+                <td><strong>최현우</strong></td><td>010-5678-9012</td>
+                <td><span class="badge badge-info">골드</span></td>
+                <td style="color:var(--gold)">3,200,000</td><td>오늘</td>
+                <td><button onclick="event.stopPropagation();goPosWith('최현우')" style="background:#3A6FC4;border:none;color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;">판매 →</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ② 고객 정보 탭 -->
+      <div id="cpanel-info" style="display:none;">
+        <div style="display:flex;gap:20px;align-items:start;">
+          <!-- 좌: 기본정보 -->
+          <div style="flex:1;background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:20px;">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+              <div style="width:72px;height:72px;border-radius:50%;background:var(--dark3);border:2px solid var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">👤</div>
+              <div style="flex:1;">
+                <div style="font-size:20px;font-weight:900;" id="cinfo-name">이수진</div>
+                <div style="margin-top:4px;display:flex;gap:8px;align-items:center;">
+                  <span class="badge badge-gold">VIP</span>
+                  <span style="font-size:12px;color:var(--text-muted);">포인트 12,450P · 골드적립 3.2g</span>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">📞 010-1234-5678 &nbsp;|&nbsp; 🎂 생일 3월 28일</div>
+              </div>
+              <button onclick="goPosWith('이수진')" style="background:#3A6FC4;border:none;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🛒 판매 등록 →</button>
+            </div>
+            <div class="form-grid">
+              <div class="form-group"><div class="form-label">이름</div><input class="form-input" value="이수진"></div>
+              <div class="form-group"><div class="form-label">연락처</div><input class="form-input" value="010-1234-5678"></div>
+              <div class="form-group"><div class="form-label">생년월일</div><input class="form-input" value="1985-03-28"></div>
+              <div class="form-group"><div class="form-label">성별</div><select class="form-input"><option>여성</option><option>남성</option></select></div>
+              <div class="form-group"><div class="form-label">등급</div><select class="form-input"><option>VIP</option><option>골드</option><option>실버</option><option>일반</option></select></div>
+              <div class="form-group"><div class="form-label">이메일</div><input class="form-input" value="suejin@email.com"></div>
+              <div class="form-group full"><div class="form-label">주소</div><input class="form-input" value="서울시 강남구 역삼동 123-4"></div>
+              <div class="form-group full">
+                <div class="form-label">메모 / 선호 스타일</div>
+                <textarea class="form-input" rows="3" style="resize:vertical;line-height:1.6;">18K 선호, 다이아 세팅. 기념일 전 방문 패턴. 예산 100만원+. 선물용 포장 요청 많음.</textarea>
+              </div>
+            </div>
+            <div style="text-align:right;margin-top:12px;">
+              <button class="btn btn-gold">저장</button>
+            </div>
+          </div>
+          <!-- 우: 기념일 관리 (가족·지인 통합) -->
+          <div style="width:300px;display:flex;flex-direction:column;gap:14px;flex-shrink:0;">
+          <div style="background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:20px;">
+            <!-- AI 분석 선호 태그 -->
+            <div style="margin-bottom:14px;">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">✨ AI 분석 · 선호 스타일</div>
+              <div class="tag-list">
+                <div class="tag active-tag">18K 선호</div>
+                <div class="tag active-tag">다이아 세팅</div>
+                <div class="tag active-tag">반지/귀걸이</div>
+                <div class="tag">예산 100만+</div>
+                <div class="tag">기념일 선물</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 기념일 관리 카드 (모바일과 동일 구조) -->
+          <div style="background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:700;">💝 기념일 관리</div>
+              <button onclick="openAnniAdminModal()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">+ 추가</button>
+            </div>
+
+            <!-- 본인 -->
+            <div class="anni-card-adm">
+              <div class="anni-card-adm-header">
+                <div class="anni-av" style="background:rgba(232,100,76,.15);">🎂</div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:700;">이수진 (본인)</div><span class="rel-tag">본인</span></div>
+                <span style="font-size:10px;color:var(--text-muted);">내정보에서 수정</span>
+              </div>
+              <div class="anni-dates">
+                <div class="anni-dt"><span>🎂</span><div><div style="font-size:10px;font-weight:600;">생일</div><div style="font-size:10px;color:var(--gold);">3월 28일 <span style="color:#e74c3c;font-weight:700;">D-1</span></div></div></div>
+                <div class="anni-dt"><span>💍</span><div><div style="font-size:10px;font-weight:600;">결혼기념일</div><div style="font-size:10px;color:var(--warn);">4월 10일 · D-14</div></div></div>
+              </div>
+            </div>
+
+            <!-- 배우자 -->
+            <div class="anni-card-adm">
+              <div class="anni-card-adm-header">
+                <div class="anni-av" style="background:rgba(201,168,76,.15);">💑</div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:700;">이준혁</div><span class="rel-tag">배우자</span></div>
+                <button onclick="openAnniAdminModal('edit')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer;">수정</button>
+              </div>
+              <div class="anni-dates">
+                <div class="anni-dt"><span>🎂</span><div><div style="font-size:10px;font-weight:600;">배우자 생일</div><div style="font-size:10px;color:var(--gold);">7월 15일 · D-109</div></div></div>
+              </div>
+            </div>
+
+            <!-- 자녀 -->
+            <div class="anni-card-adm">
+              <div class="anni-card-adm-header">
+                <div class="anni-av" style="background:rgba(76,140,232,.15);">👧</div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:700;">이하린</div><span class="rel-tag">자녀 (딸)</span></div>
+                <button onclick="openAnniAdminModal('edit')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer;">수정</button>
+              </div>
+              <div class="anni-dates">
+                <div class="anni-dt"><span>🎂</span><div><div style="font-size:10px;font-weight:600;">생일</div><div style="font-size:10px;color:var(--warn);">4월 18일 · D-22</div></div></div>
+              </div>
+            </div>
+
+            <!-- 부모님 -->
+            <div class="anni-card-adm">
+              <div class="anni-card-adm-header">
+                <div class="anni-av" style="background:rgba(76,175,130,.15);">👨‍👩‍👦</div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:700;">부모님</div><span class="rel-tag">부모</span></div>
+                <button onclick="openAnniAdminModal('edit')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer;">수정</button>
+              </div>
+              <div class="anni-dates">
+                <div class="anni-dt"><span>💍</span><div><div style="font-size:10px;font-weight:600;">결혼기념일</div><div style="font-size:10px;color:var(--text-muted);">5월 11일 · D-45</div></div></div>
+              </div>
+            </div>
+
+            <!-- 추가 유도 -->
+            <div onclick="openAnniAdminModal()" style="border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;margin-top:4px;">
+              <div style="font-size:20px;margin-bottom:4px;">➕</div>
+              <div style="font-size:12px;color:var(--text-muted);">기념일 추가</div>
+            </div>
+          </div>
+
+          </div><!-- /우측 컬럼 끝 -->
+        </div>
+      </div>
+
+      <!-- ③ 구매 이력 탭 -->
+      <div id="cpanel-history" style="display:none;">
+        <!-- 선택 고객 요약 -->
+        <div style="display:flex;align-items:center;gap:14px;background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:16px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--dark3);border:2px solid var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:900;">이수진 <span class="badge badge-gold" style="margin-left:6px;">VIP</span></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">총 구매 12,450,000원 · 방문 18회 · 최근 오늘</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="text-align:center;background:var(--dark3);border-radius:8px;padding:8px 16px;">
+              <div style="font-size:18px;font-weight:900;color:var(--gold);">3</div>
+              <div style="font-size:10px;color:var(--text-muted);">올해 구매</div>
+            </div>
+            <div style="text-align:center;background:var(--dark3);border-radius:8px;padding:8px 16px;">
+              <div style="font-size:18px;font-weight:900;color:var(--success);">12,450P</div>
+              <div style="font-size:10px;color:var(--text-muted);">잔여 포인트</div>
+            </div>
+            <div style="text-align:center;background:var(--dark3);border-radius:8px;padding:8px 16px;">
+              <div style="font-size:18px;font-weight:900;color:var(--info);">3.2g</div>
+              <div style="font-size:10px;color:var(--text-muted);">골드 적립</div>
+            </div>
+          </div>
+          <button onclick="goPosWith('이수진')" style="background:#3A6FC4;border:none;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🛒 판매 등록 →</button>
+        </div>
+        <!-- 구매 이력 타임라인 -->
+        <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:18px;">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">구매 이력 (최신순)</div>
+          <ul class="timeline">
+            <li class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+              <div style="flex:1;">
+                <div class="tl-text">18K 다이아 솔리테어 반지 — <span style="color:var(--gold);font-weight:700;">₩820,000</span></div>
+                <div class="tl-date">2026-03-25 · 카드 · 강남점</div>
+              </div>
+            </li>
+            <li class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+              <div style="flex:1;">
+                <div class="tl-text">18K 귀걸이 1쌍 — <span style="color:var(--gold);font-weight:700;">₩380,000</span></div>
+                <div class="tl-date">2025-12-24 · 현금 · 강남점</div>
+              </div>
+            </li>
+            <li class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+              <div style="flex:1;">
+                <div class="tl-text">커플링 세트 18K — <span style="color:var(--gold);font-weight:700;">₩560,000</span></div>
+                <div class="tl-date">2025-03-14 · 카드 · 강남점</div>
+              </div>
+            </li>
+            <li class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div>
+              <div style="flex:1;">
+                <div class="tl-text">24K 골드바 1돈 — <span style="color:var(--gold);font-weight:700;">₩462,000</span></div>
+                <div class="tl-date">2024-12-31 · 카드 · 강남점</div>
+              </div>
+            </li>
+            <li class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot"></div></div>
+              <div style="flex:1;">
+                <div class="tl-text">14K 목걸이 — <span style="color:var(--gold);font-weight:700;">₩290,000</span></div>
+                <div class="tl-date">2024-09-10 · 현금 · 강남점</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ④ 고객용 QR 탭 -->
+      <div id="cpanel-qr" style="display:none;">
+        <div style="display:flex;gap:24px;align-items:start;flex-wrap:wrap;">
+
+          <!-- QR 코드 카드 -->
+          <div style="background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:28px 32px;text-align:center;min-width:280px;">
+            <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:6px;">💎 JEWEL PRO</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">고객 등록 · 포인트 · 기념일 관리</div>
+            <!-- QR 코드 (Canvas 렌더링) -->
+            <canvas id="customer-qr-canvas" width="200" height="200"
+              style="border-radius:10px;background:#fff;padding:10px;display:block;margin:0 auto;"></canvas>
+            <div style="margin-top:14px;background:var(--dark3);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--text-muted);">
+              접속 주소
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-top:4px;word-break:break-all;"
+                 id="customer-qr-url">http://13.209.191.143/jewelry/mobile.html</div>
+            <div style="display:flex;gap:8px;margin-top:16px;justify-content:center;">
+              <button onclick="window.print()" style="background:var(--dark3);border:1px solid var(--border);color:var(--text);padding:7px 18px;border-radius:8px;font-size:12px;cursor:pointer;">🖨 인쇄</button>
+              <button onclick="downloadQR()" style="background:#3A6FC4;border:none;color:#fff;padding:7px 18px;border-radius:8px;font-size:12px;cursor:pointer;">⬇ 저장</button>
+            </div>
+          </div>
+
+          <!-- 등록 안내 -->
+          <div style="flex:1;min-width:260px;">
+            <div style="background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;">
+              <div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:14px;">📌 고객 등록 방법</div>
+              <ol style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:10px;">
+                <li style="font-size:13px;">QR코드를 스캔하거나 주소를 직접 입력합니다</li>
+                <li style="font-size:13px;"><strong>이름 · 전화번호 · 이메일</strong> 3가지만 입력하면 가입 완료</li>
+                <li style="font-size:13px;">가입 즉시 <span style="color:var(--gold);font-weight:700;">웰컴 포인트 500P</span> 자동 지급</li>
+                <li style="font-size:13px;">홈 화면 추가 → 앱처럼 사용 가능 (PWA)</li>
+              </ol>
+            </div>
+            <div style="background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;">
+              <div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:14px;">📱 홈 화면 추가 방법</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:24px;height:24px;border-radius:50%;background:var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dark);flex-shrink:0;">1</div>
+                  <div style="font-size:12px;">QR 스캔 후 <strong>크롬 브라우저</strong>로 접속</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:24px;height:24px;border-radius:50%;background:var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dark);flex-shrink:0;">2</div>
+                  <div style="font-size:12px;">우측 상단 <strong>⋮ 메뉴</strong> 클릭</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:24px;height:24px;border-radius:50%;background:var(--gold-dark);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dark);flex-shrink:0;">3</div>
+                  <div style="font-size:12px;"><strong>"홈 화면에 추가"</strong> 선택 → 아이콘 생성 완료</div>
+                </div>
+              </div>
+            </div>
+            <div style="background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:22px;">
+              <div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:12px;">⭐ 고객 앱 주요 기능</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div style="background:var(--dark3);border-radius:8px;padding:10px;font-size:12px;">💝 기념일 관리<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">D-day · AI 추천</div></div>
+                <div style="background:var(--dark3);border-radius:8px;padding:10px;font-size:12px;">⭐ 포인트 조회<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">적립 · 사용 내역</div></div>
+                <div style="background:var(--dark3);border-radius:8px;padding:10px;font-size:12px;">🛍 구매 이력<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">영수증 · 보증서</div></div>
+                <div style="background:var(--dark3);border-radius:8px;padding:10px;font-size:12px;">👥 지인 추천<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">추천 보너스 적립</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ 수리 / 주문제작 ══ -->
+    <div id="screen-repair" class="screen">
+      <!-- 상단 툴바 -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <input class="input" placeholder="🔍 고객명, 접수번호 검색..." style="flex:1;min-width:180px;">
+        <select class="input" style="width:110px;"><option>전체 종류</option><option>수리</option><option>주문제작</option><option>사이즈조정</option><option>세척</option></select>
+        <select class="input" style="width:110px;"><option>전체 상태</option><option>접수</option><option>작업중</option><option>완료</option><option>출고</option></select>
+        <div style="display:flex;gap:6px;align-items:center;background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--text-muted);">
+          총 <strong style="color:var(--gold);margin:0 4px;">8건</strong> (미완료 5건)
+        </div>
+        <button class="btn btn-gold" onclick="document.getElementById('repair-modal').classList.add('open')">+ 수리 접수</button>
+        <button class="btn btn-outline" onclick="document.getElementById('repair-modal').classList.add('open')">+ 주문제작</button>
+      </div>
+      <!-- 칸반 보드 -->
+      <div class="kanban">
+        <!-- 접수 -->
+        <div class="kanban-col">
+          <div class="kanban-col-title">📋 접수 <span class="kanban-count">2</span></div>
+          <div class="kanban-card" onclick="document.getElementById('repair-modal').classList.add('open')">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-008</div>
+            <div class="kanban-card-name">이민지 · 각인 주문제작</div>
+            <div class="kanban-card-desc">반지 내부 각인 "LEE&KIM 20260328"</div>
+            <div style="font-size:11px;background:linear-gradient(135deg,#1a1a2e,#0f3460);border:1px solid rgba(201,168,76,.2);border-radius:5px;padding:5px 8px;margin:6px 0;color:#88aacc;">
+              ✨ AI: 18K 옐로우골드 반지, 내부 각인 요청
+            </div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-gray">주문제작</span>
+              <span class="kanban-date">예정: 3/28 · 예상 50,000원</span>
+            </div>
+          </div>
+          <div class="kanban-card">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-007</div>
+            <div class="kanban-card-name">강민준 · 팔찌 수리</div>
+            <div class="kanban-card-desc">체인 끊김 용접 수리</div>
+            <div style="font-size:11px;background:linear-gradient(135deg,#1a1a2e,#0f3460);border:1px solid rgba(201,168,76,.2);border-radius:5px;padding:5px 8px;margin:6px 0;color:#88aacc;">
+              ✨ AI: 14K 팔찌, 체인 연결부 파손
+            </div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-warn">수리</span>
+              <span class="kanban-date">예정: 3/29 · 예상 30,000원</span>
+            </div>
+          </div>
+        </div>
+        <!-- 작업중 -->
+        <div class="kanban-col">
+          <div class="kanban-col-title" style="color:var(--info)">🔧 작업중 <span class="kanban-count">3</span></div>
+          <div class="kanban-card" style="border-color:var(--danger)">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-003</div>
+            <div class="kanban-card-name">김철수 · 다이아 세팅 수리</div>
+            <div class="kanban-card-desc">루즈해진 다이아 0.3ct 재세팅</div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-danger">수리</span>
+              <span class="kanban-date overdue">3/22 초과! · 150,000원</span>
+            </div>
+          </div>
+          <div class="kanban-card">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-005</div>
+            <div class="kanban-card-name">홍길동 · 목걸이 체인 교체</div>
+            <div class="kanban-card-desc">18K 체인 60cm로 교체</div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-warn">수리</span>
+              <span class="kanban-date">예정: 3/27 · 80,000원</span>
+            </div>
+          </div>
+          <div class="kanban-card">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-006</div>
+            <div class="kanban-card-name">정다은 · 반지 도금</div>
+            <div class="kanban-card-desc">로즈골드 도금 재처리</div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-warn">수리</span>
+              <span class="kanban-date">예정: 3/28 · 50,000원</span>
+            </div>
+          </div>
+        </div>
+        <!-- 완료 -->
+        <div class="kanban-col">
+          <div class="kanban-col-title" style="color:var(--warn)">✅ 완료 <span class="kanban-count">2</span></div>
+          <div class="kanban-card" style="border-color:var(--warn)">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-004</div>
+            <div class="kanban-card-name">박지영 · 반지 사이즈 조절</div>
+            <div class="kanban-card-desc">11호 → 12호 사이즈업</div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-success">완료</span>
+              <span class="kanban-date" style="color:var(--warn)">⚠ 알림 미발송 · 40,000원</span>
+            </div>
+          </div>
+          <div class="kanban-card">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-002</div>
+            <div class="kanban-card-name">윤서현 · 귀걸이 침 교체</div>
+            <div class="kanban-card-desc">침 2개 교체 완료</div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-success">완료</span>
+              <span class="kanban-date">3/24 완료 · 20,000원</span>
+            </div>
+          </div>
+        </div>
+        <!-- 출고 -->
+        <div class="kanban-col">
+          <div class="kanban-col-title" style="color:var(--success)">📦 출고 <span class="kanban-count">1</span></div>
+          <div class="kanban-card">
+            <div style="font-size:10px;color:var(--text-muted);font-family:monospace;margin-bottom:4px;">RP-2026-001</div>
+            <div class="kanban-card-name">류진혁 · 목걸이 세척</div>
+            <div class="kanban-card-desc">초음파 세척 및 광택</div>
+            <div class="kanban-card-footer">
+              <span class="badge badge-success">출고완료</span>
+              <span class="kanban-date">3/23 출고 · 15,000원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 금시세 ══ -->
+    <div id="screen-goldprice" class="screen">
+      <div class="grid-2">
+        <div>
+          <div class="gold-chart-area" style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">24K 순금 (1돈 = 3.75g)</div>
+                <div class="price-display">
+                  <div class="price-big">462,000</div>
+                  <div class="price-change">▲ +3,200</div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted)">KRX 기준 · 2026-03-25 15:30 업데이트</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:11px;color:var(--text-muted)">18K (1돈)</div>
+                <div style="font-size:18px;font-weight:700;color:var(--gold-light)">346,500</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">14K (1돈)</div>
+                <div style="font-size:18px;font-weight:700;color:var(--gold-light)">269,500</div>
+              </div>
+            </div>
+            <div class="chart-bars">
+              <div class="chart-bar-item"><div class="chart-bar-fill" style="height:60%"></div><div class="chart-bar-label">3/19</div></div>
+              <div class="chart-bar-item"><div class="chart-bar-fill" style="height:65%"></div><div class="chart-bar-label">3/20</div></div>
+              <div class="chart-bar-item"><div class="chart-bar-fill" style="height:70%"></div><div class="chart-bar-label">3/21</div></div>
+              <div class="chart-bar-item"><div class="chart-bar-fill" style="height:68%"></div><div class="chart-bar-label">3/22</div></div>
+              <div class="chart-bar-item"><div class="chart-bar-fill" style="height:72%"></div><div class="chart-bar-label">3/24</div></div>
+              <div class="chart-bar-item active"><div class="chart-bar-fill active" style="height:78%"></div><div class="chart-bar-label" style="color:var(--gold)">오늘</div></div>
+            </div>
+          </div>
+          <div class="calc-box">
+            <div class="calc-title">🧮 판매가 자동 계산기</div>
+            <div class="calc-row">
+              <div class="calc-label">함량</div>
+              <select class="input input-sm" style="flex:1" onchange="calcPrice()">
+                <option value="1">24K (순금)</option>
+                <option value="0.75" selected>18K</option>
+                <option value="0.585">14K</option>
+              </select>
+            </div>
+            <div class="calc-row">
+              <div class="calc-label">중량</div>
+              <input class="input input-sm" id="weight-input" value="3.2" style="flex:1" oninput="calcPrice()">
+              <span style="font-size:12px;color:var(--text-muted)">g</span>
+            </div>
+            <div class="calc-row">
+              <div class="calc-label">공임</div>
+              <input class="input input-sm" id="labor-input" value="80000" style="flex:1" oninput="calcPrice()">
+              <span style="font-size:12px;color:var(--text-muted)">원</span>
+            </div>
+            <div class="calc-row">
+              <div class="calc-label">스톤</div>
+              <input class="input input-sm" value="0" style="flex:1">
+              <span style="font-size:12px;color:var(--text-muted)">원</span>
+            </div>
+            <div class="calc-result" id="calc-result">예상 판매가: ₩ 395,500</div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:12px">이번 달 매입처 미지급 현황</div>
+          <div class="table-wrap" style="margin-bottom:16px">
+            <table>
+              <thead><tr><th>매입처</th><th>입고금액</th><th>지급금액</th><th>미지급</th><th>결제방식</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>㈜골드세공</strong></td>
+                  <td>8,420,000</td>
+                  <td style="color:var(--success)">5,000,000</td>
+                  <td style="color:var(--danger);font-weight:700">3,420,000</td>
+                  <td><span class="badge badge-warn">금+현금</span></td>
+                </tr>
+                <tr>
+                  <td><strong>다이아몬드코리아</strong></td>
+                  <td>3,200,000</td>
+                  <td style="color:var(--success)">3,200,000</td>
+                  <td style="color:var(--success)">0</td>
+                  <td><span class="badge badge-success">완납</span></td>
+                </tr>
+                <tr>
+                  <td><strong>한국금거래소</strong></td>
+                  <td>4,620,000</td>
+                  <td style="color:var(--success)">2,000,000</td>
+                  <td style="color:var(--danger);font-weight:700">2,620,000</td>
+                  <td><span class="badge badge-gold">금교환</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="section-title" style="margin-bottom:12px">고금 매입 현황</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>날짜</th><th>고객</th><th>함량</th><th>중량</th><th>매입가</th></tr></thead>
+              <tbody>
+                <tr><td style="color:var(--text-muted)">03-24</td><td>임채원</td><td><span class="badge badge-gold">24K</span></td><td>3.75g (1돈)</td><td style="color:var(--gold)">450,000</td></tr>
+                <tr><td style="color:var(--text-muted)">03-22</td><td>송민호</td><td><span class="badge badge-warn">14K</span></td><td>7.5g (2돈)</td><td style="color:var(--gold)">405,000</td></tr>
+                <tr><td style="color:var(--text-muted)">03-20</td><td>나현정</td><td><span class="badge badge-gold">18K</span></td><td>3.75g (1돈)</td><td style="color:var(--gold)">346,000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 경영 관리 ══ -->
+    <div id="screen-reports" class="screen">
+      <!-- AI 인사이트 -->
+      <div class="ai-insight" style="margin-bottom:16px;">
+        <div class="ai-insight-title">🤖 Claude AI 경영 인사이트 · 2026년 3월</div>
+        <div class="ai-insight-text">
+          이번 달 매출은 <strong>₩38,420,000</strong>으로 전월 대비 <strong>+12.4%</strong> 성장했습니다.
+          <strong>18K 반지</strong>가 전체 매출의 56.8%를 차지하며 가장 높은 마진율(33.3%)을 기록했습니다.
+          골드바는 시세 상승으로 판매량이 늘었으나 마진율이 2.6%에 불과합니다. <strong>VIP 고객 김철수씨</strong>가 이번 달 3회 방문, 총 ₩4,100,000 구매로 최우수 고객입니다.
+        </div>
+      </div>
+      <!-- 기간 필터 -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <select class="input" style="width:100px;"><option>이번달</option><option>지난달</option><option>이번분기</option><option>올해</option><option>직접입력</option></select>
+        <input class="input" type="date" value="2026-03-01">
+        <span style="color:var(--text-muted);font-size:12px">~</span>
+        <input class="input" type="date" value="2026-03-27">
+        <select class="input" style="width:110px;"><option>전체 매장</option><option>강남점</option><option>홍대점</option><option>수원점</option></select>
+        <button class="btn btn-gold">조회</button>
+        <button class="btn btn-outline">📊 엑셀 다운로드</button>
+      </div>
+      <!-- KPI 카드 -->
+      <div class="stat-cards-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+        <div class="big-stat">
+          <div class="big-stat-label">매출</div>
+          <div class="big-stat-value" style="color:var(--gold);font-size:20px;">₩38,420,000</div>
+          <div style="font-size:11px;color:var(--success);margin-top:4px">▲ 전월 대비 +12.4%</div>
+          <div class="big-stat-bar"><div class="big-stat-bar-fill" style="width:78%"></div></div>
+        </div>
+        <div class="big-stat">
+          <div class="big-stat-label">매입 원가</div>
+          <div class="big-stat-value" style="color:var(--warn);font-size:20px;">₩22,140,000</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">매출 대비 57.6%</div>
+          <div class="big-stat-bar"><div class="big-stat-bar-fill" style="width:57%;background:var(--warn)"></div></div>
+        </div>
+        <div class="big-stat">
+          <div class="big-stat-label">수리 매출</div>
+          <div class="big-stat-value" style="color:var(--info);font-size:20px;">₩1,250,000</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">34건 처리</div>
+          <div class="big-stat-bar"><div class="big-stat-bar-fill" style="width:20%;background:var(--info)"></div></div>
+        </div>
+        <div class="big-stat">
+          <div class="big-stat-label">순이익</div>
+          <div class="big-stat-value" style="color:var(--success);font-size:20px;">₩17,530,000</div>
+          <div style="font-size:11px;color:var(--success);margin-top:4px">마진율 44.2%</div>
+          <div class="big-stat-bar"><div class="big-stat-bar-fill" style="width:44%;background:var(--success)"></div></div>
+        </div>
+      </div>
+      <!-- 일별 매출 차트 (향후 확장) -->
+      <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">📈 일별 매출 추이</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:80px;">
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:45%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:62%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:38%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:71%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:55%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:80%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:67%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:42%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:90%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:78%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:55%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:63%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:48%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:72%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:85%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:60%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:44%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:70%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:58%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:95%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:72%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:65%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:80%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:88%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:76%"></div>
+          <div style="flex:1;background:rgba(201,168,76,0.3);border-radius:2px 2px 0 0;height:73%"></div>
+          <div style="flex:1;background:var(--gold);border-radius:2px 2px 0 0;height:92%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;"><span>3/1</span><span>3/7</span><span>3/14</span><span>3/21</span><span>3/27</span></div>
+      </div>
+      <!-- 품목별 통계 -->
+      <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="padding:12px 16px;font-size:13px;font-weight:700;border-bottom:1px solid var(--border);">📋 품목별 매출 분석</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">품목</th>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">함량</th>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">판매수량</th>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">매출</th>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">마진</th>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">마진율</th>
+            <th style="background:var(--dark3);padding:10px 14px;font-size:11px;color:var(--text-muted);font-weight:700;text-align:left;">매출 비중</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(58,58,84,.5);">
+              <td style="padding:10px 14px;font-size:12px;"><strong>반지</strong></td><td style="padding:10px 14px;font-size:12px;"><span class="badge badge-gold">18K</span></td>
+              <td style="padding:10px 14px;font-size:12px;">28건</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--gold);font-weight:700;">21,840,000</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--success);">7,280,000</td>
+              <td style="padding:10px 14px;font-size:12px;"><span class="badge badge-success">33.3%</span></td>
+              <td style="padding:10px 14px;font-size:12px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:var(--dark4);border-radius:2px;height:6px;">
+                    <div style="width:56.8%;background:var(--gold);border-radius:2px;height:100%;"></div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-muted);">56.8%</span>
+                </div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(58,58,84,.5);">
+              <td style="padding:10px 14px;font-size:12px;"><strong>목걸이</strong></td><td style="padding:10px 14px;font-size:12px;"><span class="badge badge-warn">14K</span></td>
+              <td style="padding:10px 14px;font-size:12px;">15건</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--gold);font-weight:700;">6,750,000</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--success);">1,950,000</td>
+              <td style="padding:10px 14px;font-size:12px;"><span class="badge badge-success">28.9%</span></td>
+              <td style="padding:10px 14px;font-size:12px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:var(--dark4);border-radius:2px;height:6px;">
+                    <div style="width:17.6%;background:var(--gold);border-radius:2px;height:100%;"></div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-muted);">17.6%</span>
+                </div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(58,58,84,.5);">
+              <td style="padding:10px 14px;font-size:12px;"><strong>귀걸이</strong></td><td style="padding:10px 14px;font-size:12px;"><span class="badge badge-warn">14K</span></td>
+              <td style="padding:10px 14px;font-size:12px;">20건</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--gold);font-weight:700;">4,600,000</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--success);">1,400,000</td>
+              <td style="padding:10px 14px;font-size:12px;"><span class="badge badge-success">30.4%</span></td>
+              <td style="padding:10px 14px;font-size:12px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:var(--dark4);border-radius:2px;height:6px;">
+                    <div style="width:12%;background:var(--gold);border-radius:2px;height:100%;"></div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-muted);">12%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;font-size:12px;"><strong>골드바</strong></td><td style="padding:10px 14px;font-size:12px;"><span class="badge badge-gold">24K</span></td>
+              <td style="padding:10px 14px;font-size:12px;">12건</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--gold);font-weight:700;">5,544,000</td>
+              <td style="padding:10px 14px;font-size:12px;color:var(--warn);">144,000</td>
+              <td style="padding:10px 14px;font-size:12px;"><span class="badge badge-warn">2.6%</span></td>
+              <td style="padding:10px 14px;font-size:12px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;background:var(--dark4);border-radius:2px;height:6px;">
+                    <div style="width:14.4%;background:var(--warn);border-radius:2px;height:100%;"></div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-muted);">14.4%</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 기초 / 설정 ══ -->
+    <div id="screen-settings" class="screen">
+
+      <!-- 탭: 매입처 관리 -->
+      <div id="sub-supplier" class="sub-screen">
+
+        <!-- 상단: 등록/수정 폼 -->
+        <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--gold)" id="supplier-form-title">🏢 매입처 등록</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <div class="form-label">업체명 *</div>
+              <input class="form-input" id="s_company" placeholder="업체명 입력">
+            </div>
+            <div class="form-group">
+              <div class="form-label">사업자등록번호</div>
+              <input class="form-input" id="s_bizno" placeholder="000-00-00000">
+            </div>
+            <div class="form-group">
+              <div class="form-label">대표자명</div>
+              <input class="form-input" id="s_owner" placeholder="대표자 이름">
+            </div>
+            <div class="form-group">
+              <div class="form-label">담당자명 *</div>
+              <input class="form-input" id="s_manager" placeholder="담당자 이름">
+            </div>
+            <div class="form-group">
+              <div class="form-label">담당자 연락처 *</div>
+              <input class="form-input" id="s_phone" placeholder="02-0000-0000">
+            </div>
+            <div class="form-group">
+              <div class="form-label">이메일</div>
+              <input class="form-input" id="s_email" placeholder="email@company.com">
+            </div>
+            <div class="form-group">
+              <div class="form-label">결제조건</div>
+              <select class="form-input" id="s_payment">
+                <option>현금</option>
+                <option>금교환</option>
+                <option>금+현금 혼합</option>
+                <option>어음</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <div class="form-label">거래은행</div>
+              <input class="form-input" id="s_bank" placeholder="국민은행">
+            </div>
+            <div class="form-group">
+              <div class="form-label">계좌번호</div>
+              <input class="form-input" id="s_account" placeholder="000-000-000000">
+            </div>
+            <div class="form-group">
+              <div class="form-label">사용여부</div>
+              <select class="form-input" id="s_active">
+                <option>사용</option>
+                <option>미사용</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <div class="form-label">주소</div>
+              <input class="form-input" id="s_address" placeholder="주소 입력">
+            </div>
+            <div class="form-group full">
+              <div class="form-label">메모</div>
+              <input class="form-input" id="s_memo" placeholder="특이사항">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+            <button class="btn btn-outline" onclick="supplierClear()">초기화</button>
+            <button class="btn btn-danger" id="s_del_btn" style="display:none" onclick="alert('삭제 처리')">삭제</button>
+            <button class="btn btn-gold" onclick="alert('저장 완료')">저장</button>
+          </div>
+        </div>
+
+        <!-- 하단: 목록 리스트 -->
+        <div class="section-header">
+          <div class="section-title">매입처 목록</div>
+          <span style="font-size:12px;color:var(--text-muted)">행 클릭 시 위 폼에 로드됩니다</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>업체명</th><th>대표자</th><th>담당자</th><th>연락처</th><th>결제조건</th><th>거래은행</th><th>상태</th></tr>
+            </thead>
+            <tbody>
+              <tr style="cursor:pointer" onclick="loadSupplier('㈜골드세공','김성수','김부장','02-1234-5678','gold@gold.co.kr','금+현금 혼합','국민은행','111-22-333333','서울시 종로구 귀금속거리 12','사용')">
+                <td><strong>㈜골드세공</strong></td><td>김성수</td><td>김부장</td><td>02-1234-5678</td>
+                <td><span class="badge badge-gold">금+현금</span></td><td>국민은행</td>
+                <td><span class="badge badge-success">사용</span></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="loadSupplier('다이아몬드코리아','이상철','이팀장','02-2345-6789','dia@dia.co.kr','현금','신한은행','110-123-456789','서울시 강남구 보석타운 34','사용')">
+                <td><strong>다이아몬드코리아</strong></td><td>이상철</td><td>이팀장</td><td>02-2345-6789</td>
+                <td><span class="badge badge-info">현금</span></td><td>신한은행</td>
+                <td><span class="badge badge-success">사용</span></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="loadSupplier('한국금거래소','박명수','박과장','02-3456-7890','krx@gold.kr','금교환','하나은행','123-456789-00101','서울시 중구 을지로 56','사용')">
+                <td><strong>한국금거래소</strong></td><td>박명수</td><td>박과장</td><td>02-3456-7890</td>
+                <td><span class="badge badge-gold">금교환</span></td><td>하나은행</td>
+                <td><span class="badge badge-success">사용</span></td>
+              </tr>
+              <tr style="cursor:pointer" onclick="loadSupplier('실버공방','최은정','최실장','031-234-5678','silver@craft.kr','현금','우리은행','1002-123-456789','경기도 성남시 은세공거리 7','미사용')">
+                <td><strong>실버공방</strong></td><td>최은정</td><td>최실장</td><td>031-234-5678</td>
+                <td><span class="badge badge-info">현금</span></td><td>우리은행</td>
+                <td><span class="badge badge-gray">미사용</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 탭: 상품코드 관리 -->
+      <div id="sub-codes" class="sub-screen" style="display:none">
+        <div class="grid-2">
+          <div>
+            <div class="section-header">
+              <div class="section-title">🏷️ 공통코드 관리</div>
+              <button class="btn btn-gold btn-sm">+ 코드 추가</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>그룹</th><th>코드값</th><th>표시명</th><th>순서</th><th>관리</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="badge badge-gray">품목</span></td><td>RING</td><td>반지</td><td>1</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-gray">품목</span></td><td>NECK</td><td>목걸이</td><td>2</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-gray">품목</span></td><td>EAR</td><td>귀걸이</td><td>3</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-gold">함량</span></td><td>24K</td><td>24K 순금</td><td>1</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-gold">함량</span></td><td>18K</td><td>18K</td><td>2</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-gold">함량</span></td><td>14K</td><td>14K</td><td>3</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-info">색상</span></td><td>YG</td><td>옐로우골드</td><td>1</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td><span class="badge badge-info">색상</span></td><td>WG</td><td>화이트골드</td><td>2</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-header">
+              <div class="section-title">📂 상품 분류 관리</div>
+              <button class="btn btn-gold btn-sm">+ 분류 추가</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>대분류</th><th>중분류</th><th>소분류</th><th>관리</th></tr></thead>
+                <tbody>
+                  <tr><td>귀금속</td><td>반지</td><td>다이아반지</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td>귀금속</td><td>반지</td><td>골드반지</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td>귀금속</td><td>목걸이</td><td>체인목걸이</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td>보석</td><td>귀걸이</td><td>진주귀걸이</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                  <tr><td>순금</td><td>골드바</td><td>1돈</td><td><button class="btn btn-outline btn-sm">수정</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭: 사용자 등록 -->
+      <div id="sub-users" class="sub-screen" style="display:none">
+        <div class="section-header">
+          <div class="section-title">👨‍💼 사용자 등록</div>
+          <button class="btn btn-gold btn-sm">+ 직원 등록</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>이름</th><th>아이디</th><th>연락처</th><th>역할</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
+            <tbody>
+              <tr><td><strong>김대표</strong></td><td>admin</td><td>010-1234-5678</td><td><span class="badge badge-gold">관리자</span></td><td><span class="badge badge-success">활성</span></td><td>2026-01-01</td><td><div class="action-btns"><button class="btn btn-outline btn-sm">수정</button></div></td></tr>
+              <tr><td><strong>이판매</strong></td><td>staff01</td><td>010-2345-6789</td><td><span class="badge badge-info">판매원</span></td><td><span class="badge badge-success">활성</span></td><td>2026-02-01</td><td><div class="action-btns"><button class="btn btn-outline btn-sm">수정</button><button class="btn btn-danger btn-sm">비활성</button></div></td></tr>
+              <tr><td><strong>박수리</strong></td><td>staff02</td><td>010-3456-7890</td><td><span class="badge badge-warn">수리담당</span></td><td><span class="badge badge-success">활성</span></td><td>2026-02-15</td><td><div class="action-btns"><button class="btn btn-outline btn-sm">수정</button><button class="btn btn-danger btn-sm">비활성</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 탭: 권한 관리 -->
+      <div id="sub-permissions" class="sub-screen" style="display:none">
+        <div class="section-title" style="margin-bottom:14px">🔐 역할별 메뉴 접근 권한</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>메뉴</th><th>관리자</th><th>판매원</th><th>수리담당</th></tr></thead>
+            <tbody>
+              <tr><td>대시보드</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-success">✔ 허용</span></td></tr>
+              <tr><td>판매 (POS)</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>상품 관리</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-warn">읽기만</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>재고 관리</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-warn">읽기만</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>입고 관리</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-danger">✘ 차단</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>고객 관리</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>수리 / 주문제작</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-warn">읽기만</span></td><td><span class="badge badge-success">✔ 허용</span></td></tr>
+              <tr><td>금시세</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-danger">✘ 차단</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>경영 관리</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-danger">✘ 차단</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+              <tr><td>기초 / 설정</td><td><span class="badge badge-success">✔ 허용</span></td><td><span class="badge badge-danger">✘ 차단</span></td><td><span class="badge badge-danger">✘ 차단</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px;text-align:right"><button class="btn btn-gold">권한 저장</button></div>
+      </div>
+
+      <!-- 탭: 등급 / 포인트 -->
+      <div id="sub-points" class="sub-screen" style="display:none">
+        <div class="grid-2">
+          <div>
+            <div class="section-title" style="margin-bottom:14px">⭐ 등급 기준 설정</div>
+            <div class="table-wrap" style="margin-bottom:16px">
+              <table>
+                <thead><tr><th>등급</th><th>최소구매금액</th><th>최소구매횟수</th><th>할인율</th><th>적립율</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="badge badge-gold">VIP</span></td><td>10,000,000원</td><td>10회</td><td>5%</td><td>3%</td></tr>
+                  <tr><td><span class="badge badge-info">골드</span></td><td>3,000,000원</td><td>5회</td><td>3%</td><td>2%</td></tr>
+                  <tr><td><span class="badge badge-gray">실버</span></td><td>1,000,000원</td><td>3회</td><td>1%</td><td>1%</td></tr>
+                  <tr><td><span class="badge badge-gray">일반</span></td><td>0원</td><td>0회</td><td>0%</td><td>0.5%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-title" style="margin-bottom:14px">🎁 포인트 지급 설정</div>
+            <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div class="form-group"><div class="form-label">가입 포인트</div><input class="form-input" value="5000" placeholder="0"></div>
+              <div class="form-group"><div class="form-label">추천인 포인트</div><input class="form-input" value="3000" placeholder="0"></div>
+              <div class="form-group"><div class="form-label">추천받은 친구 포인트</div><input class="form-input" value="3000" placeholder="0"></div>
+              <div class="form-group"><div class="form-label">1포인트 = N원</div><input class="form-input" value="1" placeholder="1"></div>
+              <div class="form-group"><div class="form-label">최소 사용 포인트</div><input class="form-input" value="1000" placeholder="0"></div>
+              <div class="form-group"><div class="form-label">포인트 유효기간 (개월)</div><input class="form-input" value="24" placeholder="24"></div>
+              <button class="btn btn-gold">저장</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭: 시스템 설정 -->
+      <div id="sub-sysconfig" class="sub-screen" style="display:none">
+        <div class="grid-2">
+          <div>
+            <div class="section-title" style="margin-bottom:14px">⚙️ 매장 기본 설정</div>
+            <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div class="form-group"><div class="form-label">매장명</div><input class="form-input" value="골드주얼리 강남점"></div>
+              <div class="form-group"><div class="form-label">대표 연락처</div><input class="form-input" value="02-1234-5678"></div>
+              <div class="form-group"><div class="form-label">주소</div><input class="form-input" value="서울시 강남구 테헤란로 123"></div>
+              <div class="form-group"><div class="form-label">사업자등록번호</div><input class="form-input" value="123-45-67890"></div>
+              <div class="form-group"><div class="form-label">금시세 API 연동</div><select class="form-input"><option>한국금거래소 (자동)</option><option>KRX 공공API</option><option>수동 입력</option></select></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title" style="margin-bottom:14px">🔌 외부 API 설정</div>
+            <div style="background:var(--dark2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div class="form-group"><div class="form-label">카카오 알림톡 API Key</div><input class="form-input" placeholder="API Key 입력"></div>
+              <div class="form-group"><div class="form-label">이메일 발송 계정</div><input class="form-input" placeholder="Gmail 주소"></div>
+              <div class="form-group"><div class="form-label">이메일 앱 비밀번호</div><input class="form-input" type="password" placeholder="앱 비밀번호 16자리"></div>
+              <div class="form-group"><div class="form-label">AI 어시스턴트 (Claude API)</div><input class="form-input" type="password" placeholder="Anthropic API Key"></div>
+              <button class="btn btn-gold">설정 저장</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ 상품 관리 ══ -->
+    <div id="screen-products" class="screen">
+      <style>
+        .prod-layout { display:flex; gap:18px; height:calc(100vh - 110px); }
+        .prod-form-panel { width:420px; flex-shrink:0; background:var(--dark2); border:1px solid var(--border); border-radius:12px; overflow-y:auto; padding:20px; }
+        .prod-list-panel { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .prod-form-title { font-size:15px; font-weight:700; color:var(--gold); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .prod-section { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin:14px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+        .prod-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+        .prod-row.full { grid-template-columns:1fr; }
+        .prod-row.tri { grid-template-columns:1fr 1fr 1fr; }
+        .prod-field { display:flex; flex-direction:column; gap:4px; }
+        .prod-field label { font-size:11px; color:var(--text-muted); font-weight:600; }
+        .prod-field input, .prod-field select, .prod-field textarea { background:var(--dark3); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
+        .prod-field input:focus, .prod-field select:focus { border-color:var(--gold); }
+        .prod-field textarea { resize:vertical; min-height:58px; }
+        .img-upload-box { background:var(--dark3); border:2px dashed var(--border); border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:.2s; }
+        .img-upload-box:hover { border-color:var(--gold); }
+        .img-upload-box .img-icon { font-size:28px; margin-bottom:6px; }
+        .img-upload-box .img-label { font-size:12px; color:var(--text-muted); }
+        .img-thumbs { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+        .img-thumb { width:60px; height:60px; background:var(--dark4); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid var(--border); position:relative; cursor:pointer; }
+        .img-thumb.main-img { border-color:var(--gold); }
+        .img-thumb .main-badge { position:absolute; bottom:2px; left:50%; transform:translateX(-50%); font-size:9px; background:var(--gold); color:#000; border-radius:3px; padding:1px 4px; font-weight:700; }
+        .prod-form-btns { display:flex; gap:10px; margin-top:18px; }
+        .prod-list-search { display:flex; gap:10px; margin-bottom:12px; align-items:center; }
+        .prod-table-wrap { flex:1; overflow-y:auto; background:var(--dark2); border:1px solid var(--border); border-radius:10px; }
+        .prod-table-wrap table { width:100%; border-collapse:collapse; }
+        .prod-table-wrap thead th { background:var(--dark3); padding:10px 12px; font-size:11px; color:var(--text-muted); font-weight:700; text-align:left; position:sticky; top:0; }
+        .prod-table-wrap tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:.15s; }
+        .prod-table-wrap tbody tr:hover { background:var(--dark3); }
+        .prod-table-wrap tbody tr.selected { background:rgba(201,168,76,.12); border-left:3px solid var(--gold); }
+        .prod-table-wrap td { padding:10px 12px; font-size:13px; vertical-align:middle; }
+        .toggle-wrap { display:flex; align-items:center; gap:8px; }
+        .toggle { width:38px; height:20px; background:var(--border); border-radius:10px; position:relative; cursor:pointer; transition:.2s; }
+        .toggle.on { background:var(--success); }
+        .toggle::after { content:''; position:absolute; top:3px; left:3px; width:14px; height:14px; background:#fff; border-radius:50%; transition:.2s; }
+        .toggle.on::after { left:21px; }
+      </style>
+
+      <div class="prod-layout">
+        <!-- 왼쪽: 등록/수정 폼 -->
+        <div class="prod-form-panel">
+          <div class="prod-form-title">
+            <span>💍</span>
+            <span id="prod-form-mode">신규 상품 등록</span>
+          </div>
+
+          <!-- 기본정보 -->
+          <div class="prod-section">기본 정보</div>
+          <div class="prod-row">
+            <div class="prod-field">
+              <label>상품코드 <span style="color:var(--text-muted);font-weight:400">(자동생성)</span></label>
+              <input id="pf-code" placeholder="PRD-0001" style="font-family:monospace">
+            </div>
+            <div class="prod-field">
+              <label>분류</label>
+              <select id="pf-category">
+                <option>반지</option><option>목걸이</option><option>귀걸이</option>
+                <option>팔찌</option><option>브로치</option><option>시계</option><option>기타</option>
+              </select>
+            </div>
+          </div>
+          <div class="prod-row full">
+            <div class="prod-field">
+              <label>상품명 *</label>
+              <input id="pf-name" placeholder="상품명 입력">
+            </div>
+          </div>
+
+          <!-- 소재 정보 -->
+          <div class="prod-section">소재 / 보석</div>
+          <div class="prod-row tri">
+            <div class="prod-field">
+              <label>금속 종류</label>
+              <select id="pf-metal">
+                <option>금</option><option>은</option><option>PT</option><option>기타</option>
+              </select>
+            </div>
+            <div class="prod-field">
+              <label>함량</label>
+              <select id="pf-purity">
+                <option>18K</option><option>14K</option><option>24K</option>
+                <option>PT950</option><option>PT900</option><option>925실버</option>
+              </select>
+            </div>
+            <div class="prod-field">
+              <label>색상</label>
+              <select id="pf-color">
+                <option>옐로우골드</option><option>화이트골드</option><option>로즈골드</option>
+                <option>실버</option><option>기타</option>
+              </select>
+            </div>
+          </div>
+          <div class="prod-row">
+            <div class="prod-field">
+              <label>중량 (g)</label>
+              <input id="pf-weight" placeholder="0.00" type="number" step="0.01">
+            </div>
+            <div class="prod-field">
+              <label>공임비 (원)</label>
+              <input id="pf-labor" placeholder="0" type="number">
+            </div>
+          </div>
+          <div class="prod-row">
+            <div class="prod-field">
+              <label>주석 (보석명)</label>
+              <input id="pf-stone" placeholder="다이아몬드, 루비...">
+            </div>
+            <div class="prod-field">
+              <label>주석 캐럿 (ct)</label>
+              <input id="pf-stone-ct" placeholder="0.00" type="number" step="0.01">
+            </div>
+          </div>
+          <div class="prod-row full">
+            <div class="prod-field">
+              <label>부석</label>
+              <input id="pf-sub-stone" placeholder="사이드 다이아, 에메랄드...">
+            </div>
+          </div>
+
+          <!-- 가격 정보 -->
+          <div class="prod-section">가격 / 매입</div>
+          <div class="prod-row">
+            <div class="prod-field">
+              <label>매입처</label>
+              <select id="pf-supplier">
+                <option>-- 선택 --</option>
+                <option>서울골드사</option><option>동양주얼리</option><option>KJ무역</option>
+              </select>
+            </div>
+            <div class="prod-field">
+              <label>매입단가 (원)</label>
+              <input id="pf-buy" placeholder="0" type="number">
+            </div>
+          </div>
+          <div class="prod-row">
+            <div class="prod-field">
+              <label>판매가 (원)</label>
+              <input id="pf-sell" placeholder="0" type="number" style="color:var(--gold);font-weight:700">
+            </div>
+            <div class="prod-field">
+              <label>마진율</label>
+              <input id="pf-margin" placeholder="자동계산" readonly style="color:var(--success);background:var(--dark4)">
+            </div>
+          </div>
+
+          <!-- 사진 -->
+          <div class="prod-section">상품 사진 (S3)</div>
+          <div class="img-upload-box" onclick="alert('사진 업로드 (S3 연동)')">
+            <div class="img-icon">📷</div>
+            <div class="img-label">클릭하여 사진 추가<br><span style="font-size:10px">최대 5장 · JPG/PNG · 최대 5MB</span></div>
+          </div>
+          <div class="img-thumbs">
+            <div class="img-thumb main-img">💍<div class="main-badge">대표</div></div>
+            <div class="img-thumb">💍</div>
+            <div class="img-thumb">💍</div>
+            <div class="img-thumb" style="border:2px dashed var(--border);font-size:16px;color:var(--text-muted)">+</div>
+          </div>
+
+          <!-- 사용여부/메모 -->
+          <div class="prod-section">기타</div>
+          <div class="prod-row full" style="margin-bottom:10px">
+            <div class="prod-field">
+              <label>사용여부</label>
+              <div class="toggle-wrap">
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                <span style="font-size:13px">판매 활성</span>
+              </div>
+            </div>
+          </div>
+          <div class="prod-row full">
+            <div class="prod-field">
+              <label>메모</label>
+              <textarea id="pf-memo" placeholder="특이사항 자유 입력"></textarea>
+            </div>
+          </div>
+
+          <div class="prod-form-btns">
+            <button class="btn btn-outline" style="flex:1" onclick="prodClear()">신규</button>
+            <button class="btn" style="flex:1;background:var(--dark4);color:var(--text-muted)" onclick="alert('삭제')">삭제</button>
+            <button class="btn btn-gold" style="flex:2" onclick="alert('저장 완료')">💾 저장</button>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 목록 -->
+        <div class="prod-list-panel">
+          <div class="prod-list-search">
+            <input class="input" placeholder="🔍 상품명, 코드 검색..." style="flex:1">
+            <select class="input" style="width:110px"><option>전체 분류</option><option>반지</option><option>목걸이</option><option>귀걸이</option><option>팔찌</option></select>
+            <select class="input" style="width:100px"><option>전체 함량</option><option>18K</option><option>14K</option><option>PT950</option></select>
+            <select class="input" style="width:100px"><option>활성 전체</option><option>판매중</option><option>비활성</option></select>
+            <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">총 3건</span>
+          </div>
+          <div class="prod-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px"></th>
+                  <th>코드</th>
+                  <th>상품명</th>
+                  <th>분류</th>
+                  <th>함량</th>
+                  <th>색상</th>
+                  <th>중량</th>
+                  <th>주석</th>
+                  <th>판매가</th>
+                  <th>매입처</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="selected" onclick="loadProd(this, 'PRD-0001','다이아 솔리테어 반지','반지','금','18K','옐로우골드','3.2','다이아몬드','0.30','','서울골드사','480000','820000')">
+                  <td><div style="width:32px;height:32px;background:var(--dark4);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px">💍</div></td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">PRD-0001</td>
+                  <td><strong>다이아 솔리테어 반지</strong></td>
+                  <td><span class="badge badge-gray">반지</span></td>
+                  <td><span class="badge badge-gold">18K</span></td>
+                  <td style="font-size:12px">옐로우골드</td>
+                  <td>3.2g</td>
+                  <td style="font-size:12px;color:var(--info)">다이아 0.30ct</td>
+                  <td style="color:var(--gold);font-weight:700">820,000</td>
+                  <td style="font-size:12px;color:var(--text-muted)">서울골드사</td>
+                  <td><span class="badge" style="background:rgba(76,175,130,.2);color:var(--success)">판매중</span></td>
+                </tr>
+                <tr onclick="loadProd(this, 'PRD-0002','골드 체인 목걸이','목걸이','금','14K','옐로우골드','5.1','','','','동양주얼리','200000','450000')">
+                  <td><div style="width:32px;height:32px;background:var(--dark4);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px">📿</div></td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">PRD-0002</td>
+                  <td><strong>골드 체인 목걸이</strong></td>
+                  <td><span class="badge badge-gray">목걸이</span></td>
+                  <td><span class="badge badge-warn">14K</span></td>
+                  <td style="font-size:12px">옐로우골드</td>
+                  <td>5.1g</td>
+                  <td style="font-size:12px;color:var(--text-muted)">-</td>
+                  <td style="color:var(--gold);font-weight:700">450,000</td>
+                  <td style="font-size:12px;color:var(--text-muted)">동양주얼리</td>
+                  <td><span class="badge" style="background:rgba(76,175,130,.2);color:var(--success)">판매중</span></td>
+                </tr>
+                <tr onclick="loadProd(this, 'PRD-0003','진주 드롭 귀걸이','귀걸이','금','14K','화이트골드','1.8','진주','','','KJ무역','90000','230000')">
+                  <td><div style="width:32px;height:32px;background:var(--dark4);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px">✨</div></td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text-muted)">PRD-0003</td>
+                  <td><strong>진주 드롭 귀걸이</strong></td>
+                  <td><span class="badge badge-gray">귀걸이</span></td>
+                  <td><span class="badge badge-warn">14K</span></td>
+                  <td style="font-size:12px">화이트골드</td>
+                  <td>1.8g</td>
+                  <td style="font-size:12px;color:var(--info)">진주</td>
+                  <td style="color:var(--gold);font-weight:700">230,000</td>
+                  <td style="font-size:12px;color:var(--text-muted)">KJ무역</td>
+                  <td><span class="badge" style="background:rgba(232,84,84,.15);color:var(--danger)">비활성</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── 수리 접수 모달 ── -->
+<div class="modal-overlay" id="repair-modal">
+  <div class="modal" style="min-width:580px;max-height:85vh;overflow-y:auto;">
+    <div class="modal-title">
+      🔧 수리 / 주문제작 접수
+      <span class="modal-close" onclick="document.getElementById('repair-modal').classList.remove('open')">✕</span>
+    </div>
+    <!-- AI 사진 분석 -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:12px;color:var(--gold);font-weight:700;">📷 AI 수리품 사진 분석</div>
+        <div style="font-size:11px;color:#88aacc;margin-top:2px;">사진 찍으면 수리 내용 자동 설명 생성 (Claude Vision)</div>
+      </div>
+      <button style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:7px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;" onclick="alert('카메라 실행 → AI 분석')">✨ 사진 촬영</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">접수번호 (자동)</div><input class="form-input" value="RP-2026-009" readonly style="color:var(--text-muted);"></div>
+      <div class="form-group"><div class="form-label">접수일시</div><input class="form-input" value="2026-03-27" type="date"></div>
+      <div class="form-group"><div class="form-label">고객 *</div>
+        <select class="form-input"><option>-- 고객 검색 --</option><option>김철수 (VIP)</option><option>이수진 (골드)</option><option>박지영 (실버)</option></select>
+      </div>
+      <div class="form-group"><div class="form-label">담당직원</div>
+        <select class="form-input"><option>유동주 (관리자)</option><option>김수리 (수리담당)</option></select>
+      </div>
+      <div class="form-group"><div class="form-label">수리 종류 *</div>
+        <select class="form-input"><option>수리</option><option>주문제작</option><option>사이즈조정</option><option>세척</option><option>기타</option></select>
+      </div>
+      <div class="form-group"><div class="form-label">완료 예정일</div><input class="form-input" type="date"></div>
+      <div class="form-group full"><div class="form-label">수리품 설명 (고객 지참 품목)</div><input class="form-input" placeholder="18K 반지, 다이아몬드 세팅 루즈함"></div>
+      <div class="form-group full">
+        <div class="form-label">AI 자동 생성 설명</div>
+        <textarea class="form-input" style="min-height:60px;resize:vertical;" placeholder="사진 촬영 후 자동완성...">18K 옐로우골드 솔리테어 반지, 중앙 다이아몬드 0.3ct 세팅부 마모로 보석 흔들림 발생. 프롱 세팅 재작업 필요.</textarea>
+      </div>
+      <div class="form-group full"><div class="form-label">요청 내용 *</div><textarea class="form-input" style="min-height:60px;resize:vertical;" placeholder="고객이 원하는 수리 내용 상세 입력"></textarea></div>
+      <div class="form-group"><div class="form-label">예상 비용 (원)</div><input class="form-input" placeholder="150,000"></div>
+      <div class="form-group"><div class="form-label">선불금</div><input class="form-input" placeholder="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('repair-modal').classList.remove('open')">취소</button>
+      <button class="btn btn-gold" onclick="document.getElementById('repair-modal').classList.remove('open')">접수 완료 · 고객 알림 발송</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── 고객 등록 모달 ── -->
+<div class="modal-overlay" id="customer-modal">
+  <div class="modal">
+    <div class="modal-title">
+      고객 등록
+      <span class="modal-close" onclick="closeCustomerModal()">✕</span>
+    </div>
+    <!-- 사진 업로드 -->
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border);">
+      <div id="cust-photo-preview" style="width:72px;height:72px;border-radius:50%;background:var(--dark3);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;">👤</div>
+      <div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;">고객 사진</div>
+        <label style="cursor:pointer;background:var(--dark3);border:1px solid var(--border);padding:6px 14px;border-radius:6px;font-size:11px;color:var(--text-muted);">
+          📷 사진 선택
+          <input type="file" accept="image/*" style="display:none" onchange="previewCustPhoto(this)">
+        </label>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:6px;">고객 동의 후 등록 · 선택사항</div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">이름 *</div><input class="form-input" placeholder="고객명 입력"></div>
+      <div class="form-group"><div class="form-label">연락처 *</div><input class="form-input" placeholder="010-0000-0000"></div>
+      <div class="form-group"><div class="form-label">생년월일</div><input class="form-input" type="date"></div>
+      <div class="form-group"><div class="form-label">성별</div>
+        <select class="form-input"><option value="">선택</option><option>여성</option><option>남성</option></select>
+      </div>
+      <div class="form-group"><div class="form-label">등급</div>
+        <select class="form-input"><option>일반</option><option>실버</option><option>골드</option><option>VIP</option></select>
+      </div>
+      <div class="form-group"><div class="form-label">이메일</div><input class="form-input" placeholder="이메일 주소"></div>
+      <div class="form-group full"><div class="form-label">주소</div><input class="form-input" placeholder="주소 입력"></div>
+      <div class="form-group full"><div class="form-label">메모 / 선호 스타일</div><textarea class="form-input" placeholder="선호 소재, 스타일, 특이사항 등" rows="3" style="resize:vertical;line-height:1.6;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeCustomerModal()">취소</button>
+      <button class="btn btn-gold" onclick="closeCustomerModal()">등록 완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 기념일 등록 모달 (관리자) ── -->
+<div class="modal-overlay" id="anni-admin-modal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-title">💝 기념일 등록 <span class="modal-close" onclick="closeAnniAdminModal()">✕</span></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <div class="form-label">이름 *</div>
+        <input class="form-input" id="aa-name" placeholder="예) 이준혁, 부모님">
+      </div>
+      <div class="form-group">
+        <div class="form-label">관계 *</div>
+        <select class="form-input" id="aa-rel">
+          <option value="">선택하세요</option>
+          <option>본인</option>
+          <option>배우자</option><option>자녀 (아들)</option><option>자녀 (딸)</option>
+          <option>부모</option><option>애인/연인</option><option>친구</option><option>지인</option><option>기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">생일</div>
+        <input class="form-input" id="aa-birth" type="date">
+      </div>
+      <div class="form-group">
+        <div class="form-label">기념일 날짜</div>
+        <input class="form-input" id="aa-date" type="date">
+      </div>
+      <div class="form-group">
+        <div class="form-label">기념일 종류</div>
+        <select class="form-input" id="aa-type">
+          <option value="">선택 (선택사항)</option>
+          <option>결혼기념일</option><option>100일</option><option>1주년</option>
+          <option>입학/졸업</option><option>기타 기념일</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">메모</div>
+        <input class="form-input" id="aa-memo" placeholder="선호 스타일, 색상 등">
+      </div>
+    </div>
+    <div style="background:var(--dark3);border-radius:8px;padding:10px 12px;margin:12px 0;font-size:11px;color:var(--text-muted);line-height:1.7;">
+      📬 등록된 기념일 <strong style="color:var(--gold);">30일 전</strong> 고객에게 알림 + AI 추천 상품 발송
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" style="flex:1;background:var(--dark3);border:1px solid var(--border);color:var(--text-muted);" onclick="closeAnniAdminModal()">취소</button>
+      <button class="btn btn-gold" style="flex:2;" onclick="closeAnniAdminModal()">기념일 등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── POS 빠른 상품 등록 모달 ── -->
+<div class="modal-overlay" id="quick-product-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title">
+      빠른 상품 등록
+      <span class="modal-close" onclick="closeQuickProductModal()">✕</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:16px;">
+      최소 정보만 입력 후 즉시 판매 — 나머지는 상품 관리에서 보완
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <div class="form-label">분류 *</div>
+        <select class="form-input" id="qp-category">
+          <option value="">선택</option>
+          <option>반지</option><option>목걸이</option><option>귀걸이</option>
+          <option>팔찌</option><option>골드바</option><option>기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">함량</div>
+        <select class="form-input" id="qp-karat">
+          <option>미정</option><option>14K</option><option>18K</option><option>24K</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <div class="form-label">상품명 *</div>
+        <input class="form-input" id="qp-name" placeholder="예) 18K 다이아 반지">
+      </div>
+      <div class="form-group full">
+        <div class="form-label">판매가 *</div>
+        <input class="form-input" id="qp-price" placeholder="0" type="number" style="font-size:16px;font-weight:700;color:var(--gold);">
+      </div>
+    </div>
+    <div style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:var(--text-muted);">
+      ⚠ 임시 등록 상품 — 상품 관리에서 바코드·원가·사진 등 보완 필요
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeQuickProductModal()">취소</button>
+      <button class="btn btn-gold" onclick="quickProductAddToCart()">등록 후 장바구니 담기 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 로그인
+  function doLogin() {
+    document.getElementById('login-screen').style.display = 'none';
+  }
+
+  const screens = ['dashboard','ai','pos','products','inventory','incoming','transfer','customers','repair','goldprice','reports','settings'];
+  const titles = {
+    dashboard:'대시보드', ai:'AI 어시스턴트', pos:'판매 (POS)',
+    products:'상품 관리', inventory:'재고 관리', incoming:'입고 관리', transfer:'매장간 이동', customers:'고객 관리',
+    repair:'수리 / 주문제작', goldprice:'금시세', reports:'경영 관리', settings:'기초 / 설정'
+  };
+
+  function show(id) {
+    screens.forEach(s => {
+      document.getElementById('screen-'+s).classList.toggle('active', s === id);
+    });
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.toggle('active',
+        el.getAttribute('onclick') === `show('${id}')` ||
+        el.getAttribute('onclick') === `showSettings('supplier')`  && id === 'settings'
+      );
+    });
+    document.getElementById('page-title').textContent = titles[id];
+    // 설정 외 메뉴는 서브메뉴 숨김
+    if (id !== 'settings') {
+      document.getElementById('submenu').classList.remove('visible');
+    }
+  }
+
+  function showSettings(tab) {
+    show('settings');
+    document.getElementById('submenu').classList.add('visible');
+    // 서브탭 활성화
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.toggle('active', el.getAttribute('onclick') === `showSettings('supplier')`);
+    });
+    showSubTab(tab);
+  }
+
+  function showSubTab(tab) {
+    document.querySelectorAll('.sub-screen').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('sub-' + tab).style.display = 'block';
+    document.querySelectorAll('.sub-tab').forEach(el => {
+      if (el.getAttribute('onclick') === `showSubTab('${tab}')`) el.classList.add('active');
+    });
+  }
+
+  let cart = [];
+  let currentCustomer = null;
+
+  function posBarcodeScan() {
+    const val = document.getElementById('pos-barcode').value.trim();
+    if (!val) return;
+    // 데모: 바코드로 상품 조회 시뮬레이션
+    const demoItems = {
+      'BR01-PRD0001-001': {name:'다이아 솔리테어 반지', emoji:'💍', spec:'18K · 3.18g · GIA감정', price:820000, barcode:val},
+      'BR01-PRD0002-001': {name:'골드 체인 목걸이', emoji:'📿', spec:'14K · 5.08g · 42cm', price:450000, barcode:val},
+      'BR01-PRD0003-001': {name:'진주 드롭 귀걸이', emoji:'✨', spec:'14K · 1.82g · 진주7mm', price:230000, barcode:val},
+    };
+    const item = demoItems[val] || {name:'상품 ('+val+')', emoji:'💎', spec:'바코드 스캔', price:500000, barcode:val};
+    cart.push(item);
+    document.getElementById('pos-barcode').value = '';
+    renderCart();
+  }
+
+  function selectCustomer(val) {
+    const grades = {'김철수':{grade:'VIP',rate:10,point:12500},'이수진':{grade:'골드',rate:5,point:3200},'박지영':{grade:'실버',rate:3,point:800}};
+    currentCustomer = val ? grades[val] : null;
+    document.getElementById('cart-customer').textContent = val ? val + ' (' + grades[val].grade + ')' : '비회원';
+    document.getElementById('grade-label').textContent = val ? '(' + grades[val].grade + ' ' + grades[val].rate + '%)' : '';
+    renderCart();
+  }
+
+  function addCart(name, emoji, spec, price) {
+    cart.push({name, emoji, spec, price: parseInt(price.replace(/,/g,''))});
+    renderCart();
+  }
+
+  function renderCart() {
+    const body = document.getElementById('cart-body');
+    if (cart.length === 0) {
+      body.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px 20px;font-size:13px">바코드 스캔 또는 상품 클릭<br>장바구니에 추가됩니다</div>';
+      document.getElementById('subtotal').textContent = '₩0';
+      document.getElementById('discount-row').textContent = '-₩0';
+      document.getElementById('grand-total').textContent = '₩0';
+      return;
+    }
+    body.innerHTML = cart.map((item,i) => `
+      <div class="cart-item">
+        <div class="cart-thumb">${item.emoji}</div>
+        <div class="cart-info">
+          <div class="cart-name">${item.name}</div>
+          <div class="cart-spec">${item.spec}</div>
+          ${item.barcode ? '<div style="font-size:10px;color:var(--text-muted);font-family:monospace;">'+item.barcode+'</div>' : ''}
+        </div>
+        <div class="cart-price">₩${item.price.toLocaleString()}</div>
+        <div class="cart-remove" onclick="removeCart(${i})">✕</div>
+      </div>
+    `).join('');
+    const subtotal = cart.reduce((s,i) => s+i.price, 0);
+    const discRate = currentCustomer ? currentCustomer.rate : 0;
+    const discount = Math.floor(subtotal * discRate / 100);
+    const pointUse = parseInt(document.getElementById('point-input')?.value || 0);
+    const goldUse = parseInt(document.getElementById('gold-input')?.value || 0);
+    const grand = subtotal - discount - pointUse - goldUse;
+    document.getElementById('subtotal').textContent = '₩'+subtotal.toLocaleString();
+    document.getElementById('discount-row').textContent = '-₩'+discount.toLocaleString();
+    document.getElementById('grand-total').textContent = '₩'+Math.max(0,grand).toLocaleString();
+  }
+  function removeCart(i) { cart.splice(i,1); renderCart(); }
+
+  function showCustomer() {
+    document.getElementById('customer-detail').style.display = 'block';
+  }
+
+  // 매입처 목록 행 클릭 → 폼 로드
+  function loadSupplier(company, owner, manager, phone, email, payment, bank, account, address, active) {
+    document.getElementById('supplier-form-title').textContent = '🏢 매입처 수정';
+    document.getElementById('s_company').value = company;
+    document.getElementById('s_owner').value = owner;
+    document.getElementById('s_manager').value = manager;
+    document.getElementById('s_phone').value = phone;
+    document.getElementById('s_email').value = email;
+    document.getElementById('s_payment').value = payment;
+    document.getElementById('s_bank').value = bank;
+    document.getElementById('s_account').value = account;
+    document.getElementById('s_address').value = address;
+    document.getElementById('s_active').value = active;
+    document.getElementById('s_del_btn').style.display = 'inline-block';
+    // 폼 상단으로 스크롤
+    document.getElementById('sub-supplier').scrollIntoView({behavior:'smooth'});
+  }
+  function supplierClear() {
+    document.getElementById('supplier-form-title').textContent = '🏢 매입처 등록';
+    ['s_company','s_bizno','s_owner','s_manager','s_phone','s_email','s_bank','s_account','s_address','s_memo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('s_active').value = '사용';
+    document.getElementById('s_del_btn').style.display = 'none';
+  }
+
+  // 고객관리 탭
+  function showCustTab(tab) {
+    ['list','info','history','qr'].forEach(t => {
+      document.getElementById('cpanel-'+t).style.display = t === tab ? 'block' : 'none';
+      document.getElementById('ctab-'+t).classList.toggle('active', t === tab);
+    });
+    if(tab === 'qr') drawQR();
+  }
+
+  // QR 코드 그리기 (mockup용 패턴)
+  function drawQR() {
+    const canvas = document.getElementById('customer-qr-canvas');
+    if(!canvas || canvas.dataset.drawn) return;
+    const ctx = canvas.getContext('2d');
+    const size = 200, cell = 10, cols = size/cell;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,size,size);
+    // 고정 패턴 시드로 일관된 QR 모양
+    const seed = [
+      1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,
+      1,0,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0,0,1,
+      1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,
+      1,0,1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,0,1,
+      1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,0,1,
+      1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,
+      1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,
+      0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,
+      1,0,1,1,0,1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,
+      0,1,0,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,0,0,
+      1,1,0,1,1,0,1,0,1,1,0,0,1,0,1,1,0,1,1,0,
+      0,0,1,0,0,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,
+      1,0,1,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1,1,0,
+      0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,1,0,0,1,
+      1,1,1,1,1,1,1,0,0,1,1,0,1,0,0,1,1,0,1,0,
+      1,0,0,0,0,0,1,0,1,1,0,1,0,1,1,0,0,1,0,1,
+      1,0,1,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,0,
+      1,0,1,1,1,0,1,1,1,0,0,1,0,1,0,0,1,1,0,1,
+      1,0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,0,1,0,
+      1,1,1,1,1,1,1,0,1,0,0,1,0,1,0,1,1,0,0,1,
+    ];
+    ctx.fillStyle = '#1a1a1a';
+    for(let r=0;r<cols;r++) for(let c=0;c<cols;c++) {
+      if(seed[r*cols+c]) ctx.fillRect(c*cell,r*cell,cell,cell);
+    }
+    canvas.dataset.drawn = '1';
+  }
+
+  function downloadQR() {
+    drawQR();
+    const canvas = document.getElementById('customer-qr-canvas');
+    const a = document.createElement('a');
+    a.download = 'jewelpro-qr.png';
+    a.href = canvas.toDataURL();
+    a.click();
+  }
+  function selectCustomerRow(name) {
+    document.getElementById('cinfo-name').textContent = name;
+    document.getElementById('ctab-info').style.display = '';
+    document.getElementById('ctab-history').style.display = '';
+    showCustTab('info');
+  }
+  function goPosWith(name) {
+    show('pos');
+    // POS 고객 선택 드롭다운에서 해당 고객 선택 효과
+    const sel = document.querySelector('#screen-pos select[onchange]');
+    if(sel) { for(let o of sel.options) { if(o.value === name || o.text.startsWith(name)) { sel.value = o.value; selectCustomer(o.value); break; } } }
+  }
+
+  function openAnniAdminModal() { document.getElementById('anni-admin-modal').classList.add('open'); }
+  function closeAnniAdminModal() { document.getElementById('anni-admin-modal').classList.remove('open'); }
+
+  function previewCustPhoto(input) {
+    if(input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const el = document.getElementById('cust-photo-preview');
+        el.innerHTML = '<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;">';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function openCustomerModal() { document.getElementById('customer-modal').classList.add('open'); }
+  function closeCustomerModal() { document.getElementById('customer-modal').classList.remove('open'); }
+  document.getElementById('customer-modal').addEventListener('click', function(e){ if(e.target===this) closeCustomerModal(); });
+  document.getElementById('anni-admin-modal').addEventListener('click', function(e){ if(e.target===this) closeAnniAdminModal(); });
+
+  function openQuickProductModal() { document.getElementById('quick-product-modal').classList.add('open'); }
+  function closeQuickProductModal() { document.getElementById('quick-product-modal').classList.remove('open'); }
+  document.getElementById('quick-product-modal').addEventListener('click', function(e){ if(e.target===this) closeQuickProductModal(); });
+  function quickProductAddToCart() {
+    const name = document.getElementById('qp-name').value.trim();
+    const price = document.getElementById('qp-price').value.trim();
+    const karat = document.getElementById('qp-karat').value;
+    if(!name || !price) { alert('상품명과 판매가는 필수입니다.'); return; }
+    const displayName = karat !== '미정' ? name + ' (' + karat + ')' : name;
+    addCart(displayName, '📦', karat, Number(price).toLocaleString());
+    closeQuickProductModal();
+    document.getElementById('qp-name').value = '';
+    document.getElementById('qp-price').value = '';
+    document.getElementById('qp-category').value = '';
+    document.getElementById('qp-karat').value = '미정';
+  }
+
+  // 상품 관리: 목록 행 클릭 → 폼 로드
+  function loadProd(row, code, name, cat, metal, purity, color, weight, stone, stoneCt, subStone, supplier, buy, sell) {
+    document.querySelectorAll('#screen-products tbody tr').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    document.getElementById('pf-code').value = code;
+    document.getElementById('pf-name').value = name;
+    document.getElementById('pf-category').value = cat;
+    document.getElementById('pf-metal').value = metal;
+    document.getElementById('pf-purity').value = purity;
+    document.getElementById('pf-color').value = color;
+    document.getElementById('pf-weight').value = weight;
+    document.getElementById('pf-stone').value = stone;
+    document.getElementById('pf-stone-ct').value = stoneCt;
+    document.getElementById('pf-sub-stone').value = subStone;
+    document.getElementById('pf-supplier').value = supplier;
+    document.getElementById('pf-buy').value = buy;
+    document.getElementById('pf-sell').value = sell;
+    calcMargin();
+    document.getElementById('prod-form-mode').textContent = '상품 수정 — ' + name;
+  }
+
+  // 재고 아이템: 행 클릭 → 폼 로드
+  function loadInv(row) {
+    document.querySelectorAll('#screen-inventory tbody tr').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    const cells = row.querySelectorAll('td');
+    document.getElementById('iv-barcode').value = cells[0].textContent.trim();
+    document.getElementById('iv-weight').value = parseFloat(cells[3].textContent);
+    document.getElementById('iv-price').value = cells[4].textContent.replace(/[^0-9]/g,'');
+    document.getElementById('iv-received').value = cells[8].textContent.trim();
+    document.getElementById('inv-form-mode').textContent = '아이템 수정 — ' + cells[1].textContent.trim();
+  }
+
+  // 재고 폼 초기화
+  function invClear() {
+    ['iv-barcode','iv-weight','iv-price','iv-sold','iv-cert-no','iv-memo'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.querySelectorAll('#screen-inventory tbody tr').forEach(r => r.classList.remove('selected'));
+    document.getElementById('inv-form-mode').textContent = '신규 아이템 등록';
+  }
+
+  // 상품 폼 초기화
+  function prodClear() {
+    ['pf-code','pf-name','pf-weight','pf-stone','pf-stone-ct','pf-sub-stone','pf-buy','pf-sell','pf-labor','pf-margin','pf-memo'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.querySelectorAll('#screen-products tbody tr').forEach(r => r.classList.remove('selected'));
+    document.getElementById('prod-form-mode').textContent = '신규 상품 등록';
+  }
+
+  // 마진율 자동계산
+  function calcMargin() {
+    const buy = parseFloat(document.getElementById('pf-buy').value) || 0;
+    const sell = parseFloat(document.getElementById('pf-sell').value) || 0;
+    if (buy > 0 && sell > 0) {
+      const margin = ((sell - buy) / sell * 100).toFixed(1);
+      document.getElementById('pf-margin').value = margin + '%';
+    }
+  }
+  document.getElementById('pf-buy').addEventListener('input', calcMargin);
+  document.getElementById('pf-sell').addEventListener('input', calcMargin);
+
+  const chatResponses = [
+    "분석 중입니다... 잠시만요! 📊\n\n요청하신 내용을 데이터에서 조회했습니다.\n결과를 정리해드릴게요.",
+    "네, 확인했습니다! 💡\n\n현재 기준으로 말씀드리면,\n재고 및 판매 데이터를 종합해 분석한 결과입니다.",
+    "좋은 질문이에요! 🤖\n\n해당 데이터를 즉시 조회해드리겠습니다.\n더 구체적인 조건이 있으시면 말씀해주세요."
+  ];
+  let chatIdx = 0;
+  function sendMsg() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const body = document.getElementById('chat-body');
+    const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    body.innerHTML += `<div class="msg msg-user"><div class="msg-bubble">${text}</div><div class="msg-time">${now}</div></div>`;
+    input.value = '';
+    setTimeout(() => {
+      const resp = chatResponses[chatIdx++ % chatResponses.length];
+      body.innerHTML += `<div class="msg msg-ai"><div class="msg-bubble">${resp.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div></div>`;
+      body.scrollTop = body.scrollHeight;
+    }, 800);
+    body.scrollTop = body.scrollHeight;
+  }
+</script>
+</body>
+</html>
