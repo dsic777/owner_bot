@@ -1,7 +1,7 @@
 services:
   ownerbot-backend:
     build: .
-    container_name: ownerbot-backend
+    container_name: ownerbot
     restart: unless-stopped
     env_file: backend/.env
     expose:
