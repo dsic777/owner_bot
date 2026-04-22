@@ -17,7 +17,7 @@ export default function LandingPage() {
       </div>
 
       {/* 메인 콘텐츠 */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-[176px] px-6 gap-4">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-[126px] px-6 gap-4">
 
         <div className="text-center">
           <h2 className="text-[2.2rem] font-bold leading-tight mb-3 drop-shadow-lg">
