@@ -51,7 +51,7 @@ export default function NightBackground() {
         </radialGradient>
         <linearGradient id="btm-fade" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="#020609" stopOpacity="0" />
-          <stop offset="100%" stopColor="#020609" stopOpacity="1" />
+          <stop offset="100%" stopColor="#020609" stopOpacity="0.4" />
         </linearGradient>
       </defs>
 
@@ -69,7 +69,7 @@ export default function NightBackground() {
 
       {/* 가로등 좌 */}
       <ellipse cx="118" cy="318" rx="85" ry="65" fill="url(#lamp1)" />
-      <rect x="93" y="318" width="4" height="432" fill="#132238" />
+      <rect x="93" y="318" width="4" height="432" fill="#1e3558" />
       <path d="M95 323 Q106 305 120 302" stroke="#132238" strokeWidth="3.5" fill="none" strokeLinecap="round" />
       <rect x="114" y="297" width="14" height="8" rx="3" fill="#1e3a5a" />
       <rect x="117" y="299" width="8" height="5" rx="1" fill="#ffe085" opacity="0.95" />
@@ -77,7 +77,7 @@ export default function NightBackground() {
 
       {/* 가로등 우 */}
       <ellipse cx="270" cy="300" rx="85" ry="65" fill="url(#lamp2)" />
-      <rect x="291" y="300" width="4" height="450" fill="#132238" />
+      <rect x="291" y="300" width="4" height="450" fill="#1e3558" />
       <path d="M293 305 Q282 287 268 284" stroke="#132238" strokeWidth="3.5" fill="none" strokeLinecap="round" />
       <rect x="260" y="279" width="14" height="8" rx="3" fill="#1e3a5a" />
       <rect x="263" y="281" width="8" height="5" rx="1" fill="#ffe085" opacity="0.95" />
@@ -85,7 +85,7 @@ export default function NightBackground() {
       {/* 건물들 (+220) */}
       <g transform="translate(0,220)">
         <rect x="0"   y="452" width="70"  height="10"  fill="#0c1c35" />
-        <rect x="0"   y="460" width="68"  height="290" fill="#1e3460" />
+        <rect x="0"   y="460" width="68"  height="290" fill="#2d508c" />
         <rect x="2"   y="462" width="64"  height="19"  fill="#101f3a" rx="1" />
         <rect x="5"   y="464" width="58"  height="15"  fill="#1a3358" opacity="0.55" />
         <rect x="0"   y="481" width="70"  height="11"  fill="#cdaa80" opacity="0.38" />
@@ -97,10 +97,10 @@ export default function NightBackground() {
         <rect x="19"  y="542" width="30"  height="52"  fill="#07101f" rx="2" />
 
         <rect x="66"  y="432" width="88"  height="11"  fill="#0a1828" />
-        <rect x="66"  y="440" width="86"  height="310" fill="#182e50" />
+        <rect x="66"  y="440" width="86"  height="310" fill="#264478" />
         <rect x="69"  y="442" width="80"  height="22"  fill="#0f2442" />
         <rect x="72"  y="444" width="32"  height="18"  fill="#cdaa80" opacity="0.18" />
-        <rect x="66"  y="464" width="86"  height="13"  fill="#132238" />
+        <rect x="66"  y="464" width="86"  height="13"  fill="#1e3558" />
         {[70,82,94,106,118,130,140].map((x, i) => (
           <rect key={i} x={x} y={464} width="7" height="13" fill="#cdaa80" opacity="0.28" />
         ))}
@@ -112,9 +112,9 @@ export default function NightBackground() {
         <rect x="105" y="542" width="14"  height="35"  fill="#ffd166" opacity="0.20" />
 
         <rect x="150" y="447" width="54"  height="11"  fill="#0c1c35" />
-        <rect x="150" y="455" width="52"  height="295" fill="#1e3460" />
+        <rect x="150" y="455" width="52"  height="295" fill="#2d508c" />
         <rect x="153" y="457" width="46"  height="19"  fill="#101f3a" />
-        <rect x="154" y="476" width="6"   height="30"  fill="#1e3460" rx="1" />
+        <rect x="154" y="476" width="6"   height="30"  fill="#2d508c" rx="1" />
         {[0,6,12,18,24].map((dy, i) => (
           <rect key={i} x={154} y={476+dy} width="6" height="5"
             fill={i%3===0 ? '#e63946' : i%3===1 ? '#fcfaf8' : '#457b9d'} opacity="0.7" />
@@ -125,7 +125,7 @@ export default function NightBackground() {
         <rect x="163" y="550" width="28"  height="50"  fill="#050d1c" rx="2" />
 
         <rect x="200" y="420" width="94"  height="11"  fill="#0a1828" />
-        <rect x="200" y="428" width="92"  height="322" fill="#182e50" />
+        <rect x="200" y="428" width="92"  height="322" fill="#264478" />
         <rect x="203" y="430" width="86"  height="26"  fill="#14274a" rx="1" />
         <rect x="206" y="432" width="80"  height="22"  fill="#1d3d66" opacity="0.65" />
         <rect x="210" y="435" width="72"  height="16"  fill="#cdaa80" opacity="0.15" rx="1" />
@@ -140,7 +140,7 @@ export default function NightBackground() {
         <rect x="247" y="536" width="21"  height="42"  fill="#ffd166" opacity="0.22" />
 
         <rect x="290" y="437" width="56"  height="11"  fill="#0c1c35" />
-        <rect x="290" y="445" width="54"  height="305" fill="#1e3460" />
+        <rect x="290" y="445" width="54"  height="305" fill="#2d508c" />
         <rect x="293" y="447" width="48"  height="20"  fill="#1a3d6a" />
         <rect x="295" y="449" width="44"  height="16"  fill="#2a5a90" opacity="0.45" />
         <rect x="292" y="475" width="50"  height="57"  fill="#ffd166" opacity="0.18" rx="1" />
@@ -149,18 +149,18 @@ export default function NightBackground() {
         <rect x="303" y="540" width="30"  height="52"  fill="#050d1c" rx="1" />
 
         <rect x="342" y="445" width="50"  height="11"  fill="#0a1828" />
-        <rect x="342" y="453" width="48"  height="297" fill="#182e50" />
+        <rect x="342" y="453" width="48"  height="297" fill="#264478" />
         <rect x="345" y="455" width="42"  height="18"  fill="#0f2240" />
-        <rect x="342" y="473" width="50"  height="9"   fill="#132238" opacity="0.8" />
+        <rect x="342" y="473" width="50"  height="9"   fill="#1e3558" opacity="0.8" />
         <rect x="346" y="490" width="17"  height="20"  fill="#ffd166" opacity="0.22" rx="1" />
         <rect x="348" y="492" width="13"  height="16"  fill="#ffd166" opacity="0.85" rx="1" />
         <rect x="369" y="490" width="17"  height="20"  fill="#ffd166" opacity="0.22" rx="1" />
         <rect x="371" y="492" width="13"  height="16"  fill="#ffd166" opacity="0.85" rx="1" />
 
-        <rect x="150" y="445" width="2"   height="305" fill="#010407" />
-        <rect x="198" y="418" width="4"   height="332" fill="#010407" />
-        <rect x="290" y="435" width="2"   height="315" fill="#010407" />
-        <rect x="340" y="443" width="4"   height="307" fill="#010407" />
+        <rect x="150" y="445" width="2"   height="305" fill="#0d1e38" />
+        <rect x="198" y="418" width="4"   height="332" fill="#0d1e38" />
+        <rect x="290" y="435" width="2"   height="315" fill="#0d1e38" />
+        <rect x="340" y="443" width="4"   height="307" fill="#0d1e38" />
         <ellipse cx="118" cy="463" rx="28" ry="4" fill="#ffe085" opacity="0.05" />
         <ellipse cx="268" cy="450" rx="28" ry="4" fill="#ffe085" opacity="0.05" />
       </g>
