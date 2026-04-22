@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
+import { apiFetch } from '../lib/api'
 
 const inputClass = "w-[150px] flex-1 px-3 py-[5px] rounded-xl text-base text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
@@ -93,7 +94,7 @@ export default function GeneratePage() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return
-    fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
         setCredits(data.credits ?? null)
@@ -116,7 +117,7 @@ export default function GeneratePage() {
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('/api/generate', {
+      const res = await apiFetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

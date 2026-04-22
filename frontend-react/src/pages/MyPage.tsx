@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
+import { apiFetch } from '../lib/api'
 
 interface UserInfo {
   id: number
@@ -55,19 +56,19 @@ export default function MyPage() {
   const [charging, setCharging] = useState('')
 
   const loadUser = () =>
-    fetch('/api/mypage/me', { headers: authHeader() })
+    apiFetch('/api/mypage/me', { headers: authHeader() })
       .then(r => r.json())
       .then(setUser)
       .catch(() => {})
 
   const loadTransactions = () =>
-    fetch('/api/mypage/credits', { headers: authHeader() })
+    apiFetch('/api/mypage/credits', { headers: authHeader() })
       .then(r => r.json())
       .then(data => setTransactions(data.transactions || []))
       .catch(() => {})
 
   const loadHistories = () =>
-    fetch('/api/history', { headers: authHeader() })
+    apiFetch('/api/history', { headers: authHeader() })
       .then(r => r.json())
       .then(data => setHistories(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -82,7 +83,7 @@ export default function MyPage() {
     setChargeMsg('')
     setCharging(pkgId)
     try {
-      const res = await fetch('/api/mypage/charge', {
+      const res = await apiFetch('/api/mypage/charge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({ package: pkgId }),
@@ -102,7 +103,7 @@ export default function MyPage() {
   const handleDeleteHistory = async (id: number) => {
     if (!window.confirm('이 이력을 삭제하시겠습니까?')) return
     try {
-      await fetch(`/api/history/${id}`, { method: 'DELETE', headers: authHeader() })
+      await apiFetch(`/api/history/${id}`, { method: 'DELETE', headers: authHeader() })
       setHistories(prev => prev.filter(h => h.id !== id))
     } catch {}
   }

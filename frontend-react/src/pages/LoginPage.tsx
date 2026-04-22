@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
+import { apiFetch } from '../lib/api'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -13,7 +14,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ username: form.username, password: form.password }),

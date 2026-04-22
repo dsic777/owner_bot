@@ -1,0 +1,14 @@
+services:
+  ownerbot-backend:
+    build: .
+    container_name: ownerbot-backend
+    restart: unless-stopped
+    env_file: backend/.env
+    expose:
+      - "8000"
+    networks:
+      - portfolio-net
+
+networks:
+  portfolio-net:
+    external: true
