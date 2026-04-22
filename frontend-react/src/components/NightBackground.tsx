@@ -83,7 +83,7 @@ export default function NightBackground() {
       <rect x="263" y="281" width="8" height="5" rx="1" fill="#ffe085" opacity="0.95" />
 
       {/* 건물들 */}
-      <g transform="translate(0,130)">
+      <g transform="translate(0,170)" opacity="0.65">
         <rect x="0"   y="452" width="70"  height="10"  fill="#0c1c35" />
         <rect x="0"   y="460" width="68"  height="290" fill="#2d508c" />
         <rect x="2"   y="462" width="64"  height="19"  fill="#101f3a" rx="1" />
