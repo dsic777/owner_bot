@@ -10,10 +10,10 @@
   "theme_color": "#020609",
   "icons": [
     {
-      "src": "/ownerbot/icons.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/ownerbot/ownerbot.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ]
 }
