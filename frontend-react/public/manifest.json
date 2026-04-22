@@ -1,0 +1,19 @@
+{
+  "name": "사장봇 — AI 마케팅 자동화",
+  "short_name": "사장봇",
+  "description": "사장님의 마케팅, AI가 대신합니다",
+  "start_url": "/ownerbot/",
+  "scope": "/ownerbot/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020609",
+  "theme_color": "#020609",
+  "icons": [
+    {
+      "src": "/ownerbot/icons.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
