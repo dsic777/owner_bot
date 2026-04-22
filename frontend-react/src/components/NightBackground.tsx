@@ -51,7 +51,7 @@ export default function NightBackground() {
         </radialGradient>
         <linearGradient id="btm-fade" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="#020609" stopOpacity="0" />
-          <stop offset="100%" stopColor="#020609" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#020609" stopOpacity="1" />
         </linearGradient>
       </defs>
 
@@ -166,7 +166,7 @@ export default function NightBackground() {
       </g>
 
       {/* 하단 페이드 */}
-      <rect x="0" y="660" width="390" height="90" fill="url(#btm-fade)" />
+      <rect x="0" y="580" width="390" height="170" fill="url(#btm-fade)" />
     </svg>
   )
 }

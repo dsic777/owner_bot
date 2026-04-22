@@ -24,7 +24,7 @@ export default function LandingPage() {
             사장님의 마케팅<br />
             <span className="text-sand">AI가 대신합니다</span>
           </h2>
-          <p className="text-[1.1rem] text-cream leading-relaxed drop-shadow">
+          <p className="text-[1.25rem] text-cream leading-relaxed drop-shadow">
             블로그 · 리뷰답글 · 쇼츠기획 · 썸네일
           </p>
         </div>
