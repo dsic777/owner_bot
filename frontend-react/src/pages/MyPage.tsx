@@ -42,7 +42,7 @@ const PLAN_LABEL: Record<string, string> = {
   monthly: '월정액',
 }
 
-function authHeader() {
+function authHeader(): Record<string, string> {
   const token = localStorage.getItem('token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
