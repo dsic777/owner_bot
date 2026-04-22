@@ -69,7 +69,7 @@ export default function NightBackground() {
 
       {/* 가로등 좌 */}
       <ellipse cx="118" cy="318" rx="85" ry="65" fill="url(#lamp1)" />
-      <rect x="93" y="318" width="4" height="432" fill="#1e3558" />
+      <rect x="93" y="318" width="4" height="432" fill="#06111f" />
       <path d="M95 323 Q106 305 120 302" stroke="#132238" strokeWidth="3.5" fill="none" strokeLinecap="round" />
       <rect x="114" y="297" width="14" height="8" rx="3" fill="#1e3a5a" />
       <rect x="117" y="299" width="8" height="5" rx="1" fill="#ffe085" opacity="0.95" />
@@ -77,7 +77,7 @@ export default function NightBackground() {
 
       {/* 가로등 우 */}
       <ellipse cx="270" cy="300" rx="85" ry="65" fill="url(#lamp2)" />
-      <rect x="291" y="300" width="4" height="450" fill="#1e3558" />
+      <rect x="291" y="300" width="4" height="450" fill="#06111f" />
       <path d="M293 305 Q282 287 268 284" stroke="#132238" strokeWidth="3.5" fill="none" strokeLinecap="round" />
       <rect x="260" y="279" width="14" height="8" rx="3" fill="#1e3a5a" />
       <rect x="263" y="281" width="8" height="5" rx="1" fill="#ffe085" opacity="0.95" />
