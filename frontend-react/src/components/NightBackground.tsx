@@ -18,6 +18,7 @@ const STARS = [
 
 export default function NightBackground() {
   return (
+    <>
     <svg
         viewBox="0 0 390 750"
         xmlns="http://www.w3.org/2000/svg"
@@ -53,5 +54,13 @@ export default function NightBackground() {
           <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity={s.o} />
         ))}
       </svg>
+
+      <img
+        src="/ownerbot/bottom.png"
+        alt=""
+        className="absolute bottom-0 left-0 w-full pointer-events-none"
+        style={{ height: 'auto' }}
+      />
+    </>
   )
 }
