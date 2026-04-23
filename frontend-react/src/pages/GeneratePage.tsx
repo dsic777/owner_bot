@@ -361,12 +361,14 @@ export default function GeneratePage() {
 
             </div>
 
-            <button
-              onClick={() => setResult(null)}
-              className="w-full py-2 rounded-xl bg-[#b89973] text-navy font-bold text-[1.4rem] hover:bg-camel transition-colors shadow-lg mt-2"
-            >
-              다시 생성 →
-            </button>
+            <div className="flex justify-center mt-2">
+              <button
+                onClick={() => setResult(null)}
+                className="px-6 py-2 rounded-xl bg-[#b89973] text-navy font-bold text-[1.4rem] hover:bg-camel transition-colors shadow-lg"
+              >
+                다시 생성 →
+              </button>
+            </div>
 
           </div>
         )}
