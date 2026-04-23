@@ -10,9 +10,9 @@
   "theme_color": "#020609",
   "icons": [
     {
-      "src": "/ownerbot/ownerbot.jpg",
+      "src": "/ownerbot/icon.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
