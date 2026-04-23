@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 import { apiFetch } from '../lib/api'
 
-const inputClass = "w-[150px] flex-1 px-3 py-[05px] rounded-xl text-base text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+const inputClass = "w-[150px] flex-1 px-3 py-[4px] rounded-xl text-base text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
 const labelClass = "text-base font-medium text-cream w-[60px] shrink-0 text-right"
 
@@ -76,14 +76,14 @@ export default function RegisterPage() {
         ←
       </button>
 
-      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[75px] overflow-y-auto">
+      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[70px] overflow-y-auto">
 
         <div>
           <h2 className="text-3xl font-bold text-cream mb-1">회원가입</h2>
           <p className="text-base text-muted">3크레딧을 무료로 받으세요</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-[10px]">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-[8px]">
 
           <div className="flex items-center gap-[14px]">
             <label className={labelClass}>아이디</label>
@@ -159,7 +159,7 @@ export default function RegisterPage() {
 
         <button
           onClick={() => navigate('/login')}
-          className="w-full py-2 transition-colors text-center"
+          className="w-full py-1 transition-colors text-center"
         >
           <span className="text-cream text-lg block">이미 계정이 있으신가요?</span>
           <span className="text-sand text-2xl font-bold block">로그인 →</span>
