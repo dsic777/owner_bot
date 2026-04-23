@@ -56,12 +56,10 @@ export default function NightBackground() {
       </svg>
 
       {/* 하단 점포 이미지 */}
-      <img
-        src="/ownerbot/bottom.png"
-        alt=""
-        className="absolute bottom-0 left-0 w-full pointer-events-none"
-        style={{ height: 'auto' }}
-      />
+      <div className="absolute bottom-0 left-0 w-full pointer-events-none">
+        <div style={{ height: '60px', background: 'linear-gradient(to bottom, #0d1e38, transparent)' }} />
+        <img src="/ownerbot/bottom.png" alt="" className="w-full block" style={{ height: 'auto' }} />
+      </div>
     </>
   )
 }
