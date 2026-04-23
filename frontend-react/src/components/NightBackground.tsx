@@ -18,8 +18,7 @@ const STARS = [
 
 export default function NightBackground() {
   return (
-    <>
-      <svg
+    <svg
         viewBox="0 0 390 750"
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 w-full h-full pointer-events-none"
@@ -54,15 +53,5 @@ export default function NightBackground() {
           <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity={s.o} />
         ))}
       </svg>
-
-      {/* 하단 점포 이미지 — 상단 하늘 부분 클리핑 */}
-      <div className="absolute bottom-0 left-0 w-full pointer-events-none overflow-hidden" style={{ height: '130px' }}>
-        <img
-          src="/ownerbot/bottom.png"
-          alt=""
-          style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 'auto' }}
-        />
-      </div>
-    </>
   )
 }
