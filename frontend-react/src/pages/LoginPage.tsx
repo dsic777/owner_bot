@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 import { apiFetch } from '../lib/api'
@@ -6,6 +6,17 @@ import { apiFetch } from '../lib/api'
 export default function LoginPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ username: '', password: '' })
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
