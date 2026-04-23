@@ -1,9 +1,21 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const isLoggedIn = !!localStorage.getItem('token')
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [])
 
   return (
     <div className="h-screen text-cream flex flex-col overflow-hidden relative" style={{ background: '#020609' }}>

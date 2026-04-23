@@ -60,7 +60,7 @@ export default function NightBackground() {
         src="/ownerbot/bottom.png"
         alt=""
         className="absolute bottom-0 left-0 w-full pointer-events-none"
-        style={{ height: '200px', objectFit: 'cover', objectPosition: 'center bottom' }}
+        style={{ height: 'auto' }}
       />
     </>
   )
