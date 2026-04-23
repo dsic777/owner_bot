@@ -64,7 +64,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
+    <div className="h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
       <NightBackground />
 
       {/* 뒤로가기 */}
@@ -76,7 +76,7 @@ export default function RegisterPage() {
         ←
       </button>
 
-      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 gap-4 pt-[20px]">
+      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 gap-4 pt-[20px] overflow-y-auto">
 
         <div>
           <h2 className="text-3xl font-bold text-cream mb-1">회원가입</h2>

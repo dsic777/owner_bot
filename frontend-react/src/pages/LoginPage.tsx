@@ -34,7 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
+    <div className="h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
       <NightBackground />
 
       {/* 뒤로가기 */}
