@@ -76,7 +76,7 @@ export default function RegisterPage() {
         ←
       </button>
 
-      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[80px] overflow-y-auto">
+      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[75px] overflow-y-auto">
 
         <div>
           <h2 className="text-3xl font-bold text-cream mb-1">회원가입</h2>
