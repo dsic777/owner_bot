@@ -157,13 +157,15 @@ export default function RegisterPage() {
 
         </form>
 
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full py-1 transition-colors text-center"
-        >
-          <span className="text-cream text-lg block">이미 계정이 있으신가요?</span>
-          <span className="text-sand text-2xl font-bold block">로그인 →</span>
-        </button>
+        <div className="w-full text-center">
+          <p className="text-cream text-lg mb-2">이미 계정이 있으신가요?</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-8 py-2 rounded-xl bg-[#b89973] text-navy font-bold text-lg hover:bg-camel transition-colors shadow-lg"
+          >
+            로그인 →
+          </button>
+        </div>
 
       </main>
     </div>
