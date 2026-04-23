@@ -47,7 +47,7 @@ export default function LoginPage() {
       </button>
 
       {/* 폼 */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 gap-6 -mt-10">
+      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 gap-6 -mt-10 overflow-hidden">
 
         <div>
           <h2 className="text-3xl font-bold text-cream mb-1">로그인</h2>
