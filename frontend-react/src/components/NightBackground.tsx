@@ -55,12 +55,14 @@ export default function NightBackground() {
         ))}
       </svg>
 
-      {/* 하단 점포 이미지 */}
-      <div className="absolute bottom-0 left-0 w-full pointer-events-none">
-        <div className="relative">
-          <img src="/ownerbot/bottom.png" alt="" className="w-full block" style={{ height: 'auto' }} />
-          <div className="absolute top-0 left-0 w-full h-full" style={{ background: 'linear-gradient(to bottom, #020609 0%, #020609 30%, transparent 70%)' }} />
-        </div>
+      {/* 하단 점포 이미지 — 상단 하늘 부분 클리핑 */}
+      <div className="absolute bottom-0 left-0 w-full pointer-events-none overflow-hidden" style={{ height: '130px' }}>
+        <img
+          src="/ownerbot/bottom.png"
+          alt=""
+          style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 'auto' }}
+        />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40px', background: 'linear-gradient(to bottom, #020609, transparent)' }} />
       </div>
     </>
   )
