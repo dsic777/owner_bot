@@ -8,13 +8,11 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: '', password: '' })
 
   useEffect(() => {
+    document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
-    document.body.style.position = 'fixed'
-    document.body.style.width = '100%'
     return () => {
+      document.documentElement.style.overflow = ''
       document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
     }
   }, [])
   const [error, setError] = useState('')
@@ -45,7 +43,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
+    <div className="text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609', height: '100dvh' }}>
       <NightBackground />
 
       {/* 뒤로가기 */}

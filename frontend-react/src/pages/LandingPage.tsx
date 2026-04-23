@@ -7,18 +7,16 @@ export default function LandingPage() {
   const isLoggedIn = !!localStorage.getItem('token')
 
   useEffect(() => {
+    document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
-    document.body.style.position = 'fixed'
-    document.body.style.width = '100%'
     return () => {
+      document.documentElement.style.overflow = ''
       document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
     }
   }, [])
 
   return (
-    <div className="h-screen text-cream flex flex-col overflow-hidden relative" style={{ background: '#020609' }}>
+    <div className="text-cream flex flex-col overflow-hidden relative" style={{ background: '#020609', height: '100dvh' }}>
       <NightBackground />
 
       {/* AI 마케팅 자동화 뱃지 */}
