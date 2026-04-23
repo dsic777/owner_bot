@@ -32,7 +32,7 @@ export default function LandingPage() {
         {/* 아이콘 이미지 */}
         <div className="w-full overflow-hidden rounded-xl" style={{ maxHeight: '120px' }}>
           <img
-            src="/ownerbot/main.jpg"
+            src="/ownerbot/main.png"
             alt="블로그 리뷰답글 쇼츠기획 썸네일"
             className="w-full object-cover"
             style={{ objectPosition: 'center 30%', height: '120px' }}
