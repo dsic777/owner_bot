@@ -57,8 +57,10 @@ export default function NightBackground() {
 
       {/* 하단 점포 이미지 */}
       <div className="absolute bottom-0 left-0 w-full pointer-events-none">
-        <div style={{ height: '60px', background: 'linear-gradient(to bottom, #0d1e38, transparent)' }} />
-        <img src="/ownerbot/bottom.png" alt="" className="w-full block" style={{ height: 'auto' }} />
+        <div className="relative">
+          <img src="/ownerbot/bottom.png" alt="" className="w-full block" style={{ height: 'auto' }} />
+          <div className="absolute top-0 left-0 w-full h-full" style={{ background: 'linear-gradient(to bottom, #020609 0%, #020609 30%, transparent 70%)' }} />
+        </div>
       </div>
     </>
   )
