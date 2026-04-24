@@ -177,35 +177,17 @@ export default function GeneratePage() {
         {!result ? (
           <form onSubmit={handleSubmit} className="flex flex-col gap-[10px]">
 
-            {/* 가입 정보 — 입력 필드와 동일한 스타일로 표시 */}
-            {form.shop_name && (
-              <div className="flex items-center gap-[14px]">
-                <span className={labelClass}>상호명</span>
-                <div className={`${inputClass} text-cream`} style={inputStyle}>{form.shop_name}</div>
-              </div>
-            )}
-            {form.business_type && (
-              <div className="flex items-center gap-[14px]">
-                <span className={labelClass}>업종</span>
-                <div className={`${inputClass} text-cream`} style={inputStyle}>{form.business_type}</div>
-              </div>
-            )}
+            <div className="flex items-center gap-[14px]">
+              <label className={labelClass}>상호명</label>
+              <input type="text" value={form.shop_name} onChange={set('shop_name')}
+                placeholder="가게 이름" className={inputClass} style={inputStyle} />
+            </div>
 
-            {/* 가입 정보 없을 때만 직접 입력 */}
-            {!form.shop_name && (
-              <div className="flex items-center gap-[14px]">
-                <label className={labelClass}>상호명</label>
-                <input type="text" value={form.shop_name} onChange={set('shop_name')}
-                  placeholder="가게 이름" className={inputClass} style={inputStyle} />
-              </div>
-            )}
-            {!form.business_type && (
-              <div className="flex items-center gap-[14px]">
-                <label className={labelClass}>업종</label>
-                <input type="text" value={form.business_type} onChange={set('business_type')}
-                  placeholder="카페, 미용실, 식당 등" className={inputClass} style={inputStyle} />
-              </div>
-            )}
+            <div className="flex items-center gap-[14px]">
+              <label className={labelClass}>업종</label>
+              <input type="text" value={form.business_type} onChange={set('business_type')}
+                placeholder="카페, 미용실, 식당 등" className={inputClass} style={inputStyle} />
+            </div>
 
             <div className="flex items-center gap-[14px]">
               <label className={labelClass}>지역</label>
