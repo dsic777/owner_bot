@@ -247,7 +247,9 @@ export default function MyPage() {
 
         {/* 로그아웃 */}
         <div className="w-full flex justify-center mt-2">
-          <button onClick={handleLogout} className="px-8 py-2 rounded-xl bg-[#b89973] text-navy font-bold text-lg hover:bg-camel transition-colors shadow-lg">
+          <button onClick={handleLogout}
+            className="px-8 py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-lg hover:bg-camel transition-all active:translate-y-[2px]"
+            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}>
             로그아웃 →
           </button>
         </div>

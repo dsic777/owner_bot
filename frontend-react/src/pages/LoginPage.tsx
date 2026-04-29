@@ -98,7 +98,8 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 rounded-xl bg-[#b89973] text-navy font-bold text-[1.4rem] hover:bg-camel transition-colors shadow-lg disabled:opacity-60 mt-2"
+            className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-2"
+            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>
@@ -109,7 +110,8 @@ export default function LoginPage() {
           <p className="text-cream text-lg mb-2">계정이 없으신가요?</p>
           <button
             onClick={() => navigate('/register')}
-            className="px-8 py-2 rounded-xl bg-[#b89973] text-navy font-bold text-lg hover:bg-camel transition-colors shadow-lg"
+            className="px-8 py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-lg hover:bg-camel transition-all active:translate-y-[2px]"
+            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
           >
             회원가입 →
           </button>

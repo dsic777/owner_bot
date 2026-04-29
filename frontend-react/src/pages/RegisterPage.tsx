@@ -148,7 +148,8 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 rounded-xl bg-[#b89973] text-navy font-bold text-[1.4rem] hover:bg-camel transition-colors shadow-lg disabled:opacity-60 mt-1"
+            className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-1"
+            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
           >
             {loading ? '가입 중...' : (
               <>회원가입 <span style={{ fontSize: 'calc(1.4rem - 2px)' }}>→ 3크레딧 무료지급</span></>
@@ -161,7 +162,8 @@ export default function RegisterPage() {
           <p className="text-cream text-lg mb-2">이미 계정이 있으신가요?</p>
           <button
             onClick={() => navigate('/login')}
-            className="px-8 py-2 rounded-xl bg-[#b89973] text-navy font-bold text-lg hover:bg-camel transition-colors shadow-lg"
+            className="px-8 py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-lg hover:bg-camel transition-all active:translate-y-[2px]"
+            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
           >
             로그인 →
           </button>

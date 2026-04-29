@@ -231,7 +231,8 @@ export default function GeneratePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 rounded-xl bg-[#b89973] text-navy font-bold text-[1.4rem] hover:bg-camel transition-colors shadow-lg disabled:opacity-60 mt-2"
+              className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-2"
+              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
             >
               {loading ? 'AI 생성 중...' : '콘텐츠 생성 →'}
             </button>
@@ -346,7 +347,8 @@ export default function GeneratePage() {
             <div className="flex justify-center mt-2">
               <button
                 onClick={() => setResult(null)}
-                className="px-6 py-2 rounded-xl bg-[#b89973] text-navy font-bold text-[1.4rem] hover:bg-camel transition-colors shadow-lg"
+                className="px-6 py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px]"
+                style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
               >
                 다시 생성 →
               </button>
