@@ -58,8 +58,8 @@ export default function NightBackground() {
       <img
         src={`${import.meta.env.BASE_URL}bottom.png`}
         alt=""
-        className="fixed bottom-0 pointer-events-none"
-        style={{ width: '80%', height: 'auto', left: '10%', zIndex: 1 }}
+        className="fixed bottom-0 left-0 w-full pointer-events-none"
+        style={{ height: '160px', objectFit: 'cover', objectPosition: 'bottom', zIndex: 1 }}
       />
     </>
   )

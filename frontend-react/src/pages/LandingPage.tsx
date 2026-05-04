@@ -16,82 +16,75 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609', height: '100dvh' }}>
+    <div className="text-cream flex flex-col overflow-hidden relative" style={{ background: '#020609', height: '100dvh' }}>
       <NightBackground />
 
       {/* AI 마케팅 자동화 뱃지 */}
       <div className="absolute top-9 left-5 z-10">
-        <span className="text-[1.05rem] px-4 py-1.5 rounded-full bg-white/10 text-cream border border-sand/60 backdrop-blur-sm">
+        <span className="text-[1.1rem] px-4 py-1.5 rounded-full bg-white/10 text-cream border-2 border-sand backdrop-blur-sm">
           AI 마케팅 자동화
         </span>
       </div>
 
-      <main className="relative z-10 flex-1 flex flex-col justify-between px-6 pt-[88px] pb-10">
+      {/* 메인 콘텐츠 */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-[126px] px-6 gap-4">
 
-        {/* 상단: 타이틀 + 이미지 + CTA */}
-        <div className="flex flex-col gap-4">
+        <div className="text-center">
+          <h2 className="text-[2.2rem] font-bold leading-tight mb-3 drop-shadow-lg">
+            사장님의 마케팅<br />
+            <span className="text-sand">AI가 대신합니다</span>
+          </h2>
+          <p className="text-[1.25rem] text-cream leading-relaxed drop-shadow">
+            블로그 · 리뷰답글 · 쇼츠기획 · 썸네일
+          </p>
+        </div>
 
-          <div className="text-center">
-            <h2 className="text-[2.4rem] font-bold leading-snug drop-shadow-lg mb-2">
-              가게 홍보글,<br />
-              네이버에서 검색되는<br />
-              <span className="text-sand">글로 만드세요.</span>
-            </h2>
-            <p className="text-[1.05rem] text-cream/70 tracking-wide">
-              블로그 · 리뷰답글 · 쇼츠기획 · 썸네일
-            </p>
-          </div>
+        {/* 아이콘 이미지 */}
+        <div className="w-full overflow-hidden rounded-xl" style={{ maxHeight: '120px' }}>
+          <img
+            src="/ownerbot/main.png"
+            alt="블로그 리뷰답글 쇼츠기획 썸네일"
+            className="w-full object-cover"
+            style={{ objectPosition: 'center 30%', height: '120px' }}
+          />
+        </div>
 
-          {/* 아이콘 이미지 — 전체 표시, 80% 폭 */}
-          <div className="flex justify-center">
-            <img
-              src={`${import.meta.env.BASE_URL}main.png`}
-              alt="블로그 리뷰답글 쇼츠기획 썸네일"
-              style={{ width: '80%', height: 'auto', display: 'block', borderRadius: '12px' }}
-            />
-          </div>
+        <div className="w-[80%] flex flex-col gap-3 mx-auto">
+          <button
+            onClick={() => navigate('/generate')}
+            className="w-full py-2 rounded-lg bg-[#b89973] text-darkbrown font-bold text-[1.55rem] hover:bg-camel transition-all active:translate-y-[2px]"
+            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
+          >
+            {isLoggedIn ? '콘텐츠 생성 →' : '무료 체험하기'}
+          </button>
 
-          {/* CTA 버튼 */}
-          {isLoggedIn ? (
-            <button
-              onClick={() => navigate('/generate')}
-              className="w-full py-3 rounded-xl bg-[#b89973] text-black font-bold text-[1.5rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
-            >
-              콘텐츠 생성 →
-            </button>
-          ) : (
+          {!isLoggedIn && (
             <button
               onClick={() => navigate('/register')}
-              className="w-full py-3 rounded-xl bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
+              className="w-full py-2 rounded-lg border border-white/30 text-cream text-[0.96rem] hover:border-sand hover:text-sand transition-colors backdrop-blur-sm"
             >
-              회원가입 → 3크레딧 무료지급
+              회원가입 — 3크레딧 무료 지급
             </button>
           )}
-
         </div>
 
-        {/* 하단: 로그인 / 마이페이지 */}
-        <div className="flex flex-col items-center gap-3">
-          {isLoggedIn ? (
-            <button onClick={() => navigate('/mypage')} className="text-center">
-              <span className="text-[1.0rem] text-cream/60 block mb-1">크레딧 · 내 정보</span>
-              <span className="text-sand text-[1.5rem] font-bold block">마이페이지 →</span>
-            </button>
-          ) : (
-            <>
-              <span className="text-[1.1rem] text-cream/80">이미 계정이 있으신가요?</span>
-              <button
-                onClick={() => navigate('/login')}
-                className="px-12 py-[10px] rounded-xl bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
-                style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
-              >
-                로그인 →
-              </button>
-            </>
-          )}
-        </div>
+        {isLoggedIn ? (
+          <button
+            onClick={() => navigate('/mypage')}
+            className="w-full py-2 transition-colors text-center mt-4"
+          >
+            <span className="text-[1.1rem] text-cream block">크레딧 · 내 정보</span>
+            <span className="text-sand text-[1.65rem] font-bold block">마이페이지 →</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full py-2 transition-colors text-center mt-4"
+          >
+            <span className="text-[1.1rem] text-cream block">이미 계정이 있으신가요?</span>
+            <span className="text-sand text-[1.65rem] font-bold block">로그인 →</span>
+          </button>
+        )}
 
       </main>
     </div>
