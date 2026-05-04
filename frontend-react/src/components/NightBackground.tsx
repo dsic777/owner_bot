@@ -56,10 +56,10 @@ export default function NightBackground() {
       </svg>
 
       <img
-        src="/ownerbot/bottom.png"
+        src={`${import.meta.env.BASE_URL}bottom.png`}
         alt=""
-        className="absolute bottom-0 left-0 w-full pointer-events-none"
-        style={{ height: '220px', objectFit: 'cover', objectPosition: 'bottom' }}
+        className="fixed bottom-0 left-0 w-full pointer-events-none"
+        style={{ height: '160px', objectFit: 'cover', objectPosition: 'bottom', zIndex: 1 }}
       />
     </>
   )
