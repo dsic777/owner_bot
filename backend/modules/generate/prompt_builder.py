@@ -292,6 +292,14 @@ SNS에서 시공 사례를 보고 바로 상담 신청했어요.
 }
 
 
+import re
+
+def _sanitize(text: str, max_len: int = 100) -> str:
+    text = re.sub(r'[<>{}\[\]\\]', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text[:max_len]
+
+
 def build_prompt(
     shop_name: str,
     business_type: str,
@@ -300,6 +308,11 @@ def build_prompt(
     feature: str = "",
     tone: str = "friendly"
 ) -> str:
+    shop_name    = _sanitize(shop_name, 50)
+    business_type = _sanitize(business_type, 30)
+    region       = _sanitize(region, 30)
+    keyword      = _sanitize(keyword, 50)
+    feature      = _sanitize(feature, 100)
 
     tone_guide = {
         "friendly": "친근하고 편안한 말투로, 이모지 1~2개 사용 가능",

@@ -31,9 +31,9 @@ interface HistoryItem {
 }
 
 const PACKAGES = [
-  { id: 'light',  credits: 3,  price: '3,900원',  label: '라이트' },
-  { id: 'basic',  credits: 10, price: '9,900원',  label: '베이직' },
-  { id: 'pro',    credits: 25, price: '19,900원', label: '프로' },
+  { id: 'light',  credits: 3,  price: '3,900원',  label: '라이트',  badge: '' },
+  { id: 'basic',  credits: 10, price: '9,900원',  label: '베이직',  badge: '인기' },
+  { id: 'pro',    credits: 25, price: '19,900원', label: '프로',    badge: '베스트' },
 ]
 
 const PLAN_LABEL: Record<string, string> = {
@@ -54,6 +54,15 @@ export default function MyPage() {
   const [histories, setHistories] = useState<HistoryItem[]>([])
   const [chargeMsg, setChargeMsg] = useState('')
   const [charging, setCharging] = useState('')
+
+  // 비밀번호 변경
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' })
+  const [pwMsg, setPwMsg] = useState('')
+  const [pwLoading, setPwLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
+
+  // 재생성
+  const [regenerating, setRegenerating] = useState<number | null>(null)
 
   const loadUser = () =>
     apiFetch('/api/mypage/me', { headers: authHeader() })
@@ -117,10 +126,58 @@ export default function MyPage() {
     }
   }
 
+  const handleRegenerate = async (h: HistoryItem) => {
+    setRegenerating(h.id)
+    try {
+      const res = await apiFetch(`/api/history/${h.id}/regenerate`, {
+        method: 'POST',
+        headers: authHeader(),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.detail || '재생성 실패')
+        return
+      }
+      await loadUser()
+      await loadHistories()
+      navigate('/generate', { state: { historyOutput: data.output, historyInfo: h } })
+    } catch {
+      alert('서버 연결에 실패했습니다.')
+    } finally {
+      setRegenerating(null)
+    }
+  }
+
+  const handlePasswordChange = async (e: { preventDefault: () => void }) => {
+    e.preventDefault()
+    setPwMsg('')
+    if (pwForm.next !== pwForm.confirm) { setPwMsg('새 비밀번호가 일치하지 않습니다.'); return }
+    if (pwForm.next.length < 6) { setPwMsg('새 비밀번호는 6자 이상이어야 합니다.'); return }
+    setPwLoading(true)
+    try {
+      const res = await apiFetch('/api/auth/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ current_password: pwForm.current, new_password: pwForm.next }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setPwMsg(data.detail || '변경 실패'); return }
+      setPwMsg('비밀번호가 변경되었습니다.')
+      setPwForm({ current: '', next: '', confirm: '' })
+    } catch {
+      setPwMsg('서버 연결에 실패했습니다.')
+    } finally {
+      setPwLoading(false)
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     navigate('/login')
   }
+
+  const inputClass = "flex-1 px-3 py-[6px] rounded-xl text-base text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+  const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
 
   return (
     <div className="min-h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
@@ -178,11 +235,16 @@ export default function MyPage() {
                 key={pkg.id}
                 onClick={() => handleCharge(pkg.id)}
                 disabled={!!charging}
-                className={`flex-1 flex flex-col items-center py-3 rounded-xl transition-colors disabled:opacity-60 ${
+                className={`flex-1 flex flex-col items-center py-3 rounded-xl transition-colors disabled:opacity-60 relative ${
                   charging === pkg.id ? 'bg-[#b89973] text-navy' : 'text-cream border border-border'
                 }`}
                 style={charging !== pkg.id ? { background: 'rgba(33,58,86,0.75)' } : {}}
               >
+                {pkg.badge && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-[1px] rounded-full bg-sand text-navy">
+                    {pkg.badge}
+                  </span>
+                )}
                 <span className="text-lg font-bold">{pkg.credits}회</span>
                 <span className="text-sm text-sand">{pkg.label}</span>
                 <span className="text-sm mt-1">{pkg.price}</span>
@@ -212,8 +274,14 @@ export default function MyPage() {
                     <p className="text-sm text-muted">{h.keyword} · {h.region} · {h.created_at?.slice(0, 10)}</p>
                   </button>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <span onClick={() => handleViewHistory(h)} className="text-sand text-lg font-bold cursor-pointer">보기 →</span>
-                    <span onClick={() => handleDeleteHistory(h.id)} className="text-muted text-lg cursor-pointer hover:text-red-400 transition-colors">삭제</span>
+                    <span onClick={() => handleViewHistory(h)} className="text-sand text-base font-bold cursor-pointer">보기</span>
+                    <span
+                      onClick={() => handleRegenerate(h)}
+                      className={`text-base font-bold cursor-pointer transition-colors ${regenerating === h.id ? 'text-muted' : 'text-sand hover:text-cream'}`}
+                    >
+                      {regenerating === h.id ? '생성중...' : '재생성'}
+                    </span>
+                    <span onClick={() => handleDeleteHistory(h.id)} className="text-muted text-base cursor-pointer hover:text-red-400 transition-colors">삭제</span>
                   </div>
                 </div>
               ))}
@@ -242,6 +310,69 @@ export default function MyPage() {
                 </div>
               ))}
             </div>
+          )}
+        </div>
+
+        <div className="border-t border-border" />
+
+        {/* 비밀번호 변경 */}
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => { setShowPw(v => !v); setPwMsg('') }}
+            className="flex items-center gap-2 text-lg font-bold text-cream text-left"
+          >
+            비밀번호 변경
+            <span className="text-muted text-base">{showPw ? '▲' : '▼'}</span>
+          </button>
+          {showPw && (
+            <form onSubmit={handlePasswordChange} className="flex flex-col gap-[10px]">
+              <div className="flex items-center gap-[14px]">
+                <span className="text-base text-muted w-[80px] shrink-0 text-right">현재</span>
+                <input
+                  type="password"
+                  value={pwForm.current}
+                  onChange={e => setPwForm(f => ({ ...f, current: e.target.value }))}
+                  placeholder="현재 비밀번호"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+              </div>
+              <div className="flex items-center gap-[14px]">
+                <span className="text-base text-muted w-[80px] shrink-0 text-right">새 비밀번호</span>
+                <input
+                  type="password"
+                  value={pwForm.next}
+                  onChange={e => setPwForm(f => ({ ...f, next: e.target.value }))}
+                  placeholder="6자 이상"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+              </div>
+              <div className="flex items-center gap-[14px]">
+                <span className="text-base text-muted w-[80px] shrink-0 text-right">확인</span>
+                <input
+                  type="password"
+                  value={pwForm.confirm}
+                  onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))}
+                  placeholder="새 비밀번호 재입력"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+              </div>
+              {pwMsg && (
+                <p className={`text-base text-center ${pwMsg.includes('변경되었') ? 'text-sand' : 'text-red-400'}`}>
+                  {pwMsg}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={pwLoading}
+                className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-base hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60"
+                style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
+              >
+                {pwLoading ? '변경 중...' : '비밀번호 변경 →'}
+              </button>
+            </form>
           )}
         </div>
 
