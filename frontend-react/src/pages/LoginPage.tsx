@@ -58,35 +58,35 @@ export default function LoginPage() {
       {/* 폼 */}
       <main className="relative z-10 flex-1 flex flex-col px-6 gap-6 pt-[65px] overflow-hidden">
 
-        <div>
-          <h2 className="text-3xl font-bold text-cream mb-1">로그인</h2>
-          <p className="text-base text-muted">계정에 로그인하세요</p>
+        <div className="text-center mb-2">
+          <h2 className="text-[2.2rem] font-bold text-cream mb-1">어서오세요, 사장님!</h2>
+          <p className="text-lg text-sand">로그인하고 1분 만에 홍보글을 만들어보세요.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
           <div className="flex flex-col gap-2">
-            <label className="text-base font-medium text-cream">이메일</label>
+            <label className="text-lg font-medium text-cream">이메일</label>
             <input
               type="email"
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value })}
-              placeholder="이메일을 입력하세요"
+              placeholder="example@email.com"
               autoComplete="email"
-              className="w-full px-4 py-[9px] rounded-xl text-lg text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+              className="w-full px-4 py-[9px] rounded-xl text-2xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
               style={{ background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }}
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-base font-medium text-cream">비밀번호</label>
+            <label className="text-lg font-medium text-cream">비밀번호</label>
             <input
               type="password"
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
               placeholder="비밀번호를 입력하세요"
               autoComplete="current-password"
-              className="w-full px-4 py-[9px] rounded-xl text-lg text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+              className="w-full px-4 py-[9px] rounded-xl text-2xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
               style={{ background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }}
             />
           </div>
@@ -106,16 +106,13 @@ export default function LoginPage() {
 
         </form>
 
-        <div className="w-full text-center mt-4">
-          <p className="text-cream text-lg mb-2">계정이 없으신가요?</p>
-          <button
-            onClick={() => navigate('/register')}
-            className="px-8 py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-lg hover:bg-camel transition-all active:translate-y-[2px] shadow-lg"
-            style={{ borderBottom: '4px solid rgba(255,255,255,0.55)' }}
-          >
-            회원가입 →
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/register')}
+          className="w-full py-2 transition-colors text-center mt-2"
+        >
+          <span className="text-[1.1rem] text-cream block">계정이 없으신가요?</span>
+          <span className="text-sand text-[1.65rem] font-bold block">회원가입 →</span>
+        </button>
 
       </main>
     </div>
