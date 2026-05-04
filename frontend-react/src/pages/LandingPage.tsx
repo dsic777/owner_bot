@@ -17,7 +17,7 @@ export default function LandingPage() {
 
   return (
     <div className="text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609', height: '100dvh' }}>
-      <NightBackground noBuilding />
+      <NightBackground />
 
       {/* AI 마케팅 자동화 뱃지 */}
       <div className="absolute top-9 left-5 z-10">
@@ -29,7 +29,7 @@ export default function LandingPage() {
       <main className="relative z-10 flex-1 flex flex-col justify-between px-6 pt-[88px] pb-10">
 
         {/* 상단: 타이틀 + 이미지 + CTA */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
 
           <div className="text-center">
             <h2 className="text-[2.4rem] font-bold leading-snug drop-shadow-lg mb-2">
@@ -42,13 +42,12 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* 아이콘 이미지 */}
-          <div className="w-full overflow-hidden rounded-2xl" style={{ height: '118px' }}>
+          {/* 아이콘 이미지 — 전체 표시, 80% 폭 */}
+          <div className="flex justify-center">
             <img
               src={`${import.meta.env.BASE_URL}main.png`}
               alt="블로그 리뷰답글 쇼츠기획 썸네일"
-              className="w-full h-full object-cover"
-              style={{ objectPosition: 'center 30%' }}
+              style={{ width: '80%', height: 'auto', display: 'block', borderRadius: '12px' }}
             />
           </div>
 
@@ -57,7 +56,7 @@ export default function LandingPage() {
             <button
               onClick={() => navigate('/generate')}
               className="w-full py-3 rounded-xl bg-[#b89973] text-black font-bold text-[1.5rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.35)' }}
+              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
             >
               콘텐츠 생성 →
             </button>
@@ -65,7 +64,7 @@ export default function LandingPage() {
             <button
               onClick={() => navigate('/register')}
               className="w-full py-3 rounded-xl bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.35)' }}
+              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
             >
               회원가입 → 3크레딧 무료지급
             </button>
@@ -86,7 +85,7 @@ export default function LandingPage() {
               <button
                 onClick={() => navigate('/login')}
                 className="px-12 py-[10px] rounded-xl bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
-                style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.35)' }}
+                style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
               >
                 로그인 →
               </button>
