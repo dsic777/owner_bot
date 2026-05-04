@@ -204,7 +204,7 @@ export default function MyPage() {
         {user && (
           <div className="flex flex-col gap-[10px]">
             <div className="flex items-center gap-[14px]">
-              <span className="text-base text-muted w-[60px] shrink-0 text-right">아이디</span>
+              <span className="text-base text-muted w-[60px] shrink-0 text-right">이메일</span>
               <span className="text-base text-cream flex-1">{user.email}</span>
             </div>
             {user.nickname && (

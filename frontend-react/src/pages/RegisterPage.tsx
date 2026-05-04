@@ -9,11 +9,7 @@ const labelClass = "text-base font-medium text-cream w-[60px] shrink-0 text-righ
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({
-    nickname: '', business_name: '', business_type: '',
-    username: '', password: '', passwordConfirm: '',
-    phone: '', user_email: '',
-  })
+  const [form, setForm] = useState({ username: '', nickname: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,12 +19,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!form.nickname || !form.username || !form.password || !form.passwordConfirm) {
-      setError('이름, 아이디, 비밀번호는 필수입니다.')
-      return
-    }
-    if (form.password !== form.passwordConfirm) {
-      setError('비밀번호가 일치하지 않습니다.')
+    if (!form.username || !form.nickname || !form.password) {
+      setError('이메일, 이름, 비밀번호는 필수입니다.')
       return
     }
     if (form.password.length < 6) {
@@ -44,10 +36,6 @@ export default function RegisterPage() {
           username: form.username,
           password: form.password,
           nickname: form.nickname,
-          business_name: form.business_name,
-          business_type: form.business_type,
-          phone: form.phone,
-          user_email: form.user_email,
         }),
       })
       if (!res.ok) {
@@ -76,33 +64,19 @@ export default function RegisterPage() {
         ←
       </button>
 
-      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[60px] overflow-y-auto">
+      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[80px] overflow-y-auto">
 
         <div>
           <h2 className="text-3xl font-bold text-cream mb-1">회원가입</h2>
           <p className="text-base text-muted">3크레딧을 무료로 받으세요</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-[8px]">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-[12px]">
 
           <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>아이디</label>
-            <input type="text" value={form.username} onChange={set('username')}
-              placeholder="로그인 아이디" autoComplete="username"
-              className={inputClass} style={inputStyle} />
-          </div>
-
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>비밀번호</label>
-            <input type="password" value={form.password} onChange={set('password')}
-              placeholder="6자 이상" autoComplete="new-password"
-              className={inputClass} style={inputStyle} />
-          </div>
-
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>비번확인</label>
-            <input type="password" value={form.passwordConfirm} onChange={set('passwordConfirm')}
-              placeholder="비밀번호 재입력" autoComplete="new-password"
+            <label className={labelClass}>이메일</label>
+            <input type="email" value={form.username} onChange={set('username')}
+              placeholder="로그인에 사용할 이메일" autoComplete="email"
               className={inputClass} style={inputStyle} />
           </div>
 
@@ -114,30 +88,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>전화번호</label>
-            <input type="tel" value={form.phone} onChange={set('phone')}
-              placeholder="010-0000-0000"
-              className={inputClass} style={inputStyle} />
-          </div>
-
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>이메일</label>
-            <input type="email" value={form.user_email} onChange={set('user_email')}
-              placeholder="example@email.com" autoComplete="email"
-              className={inputClass} style={inputStyle} />
-          </div>
-
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>상호명</label>
-            <input type="text" value={form.business_name} onChange={set('business_name')}
-              placeholder="가게 이름"
-              className={inputClass} style={inputStyle} />
-          </div>
-
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>업종</label>
-            <input type="text" value={form.business_type} onChange={set('business_type')}
-              placeholder="카페, 미용실, 식당 등"
+            <label className={labelClass}>비밀번호</label>
+            <input type="password" value={form.password} onChange={set('password')}
+              placeholder="6자 이상" autoComplete="new-password"
               className={inputClass} style={inputStyle} />
           </div>
 
@@ -148,7 +101,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-1"
+            className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-2"
             style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
           >
             {loading ? '가입 중...' : (

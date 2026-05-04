@@ -29,7 +29,7 @@ export default function LoginPage() {
         body: new URLSearchParams({ username: form.username, password: form.password }),
       })
       if (!res.ok) {
-        setError('아이디 또는 비밀번호를 확인해주세요.')
+        setError('이메일 또는 비밀번호를 확인해주세요.')
         return
       }
       const data = await res.json()
@@ -66,13 +66,13 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
           <div className="flex flex-col gap-2">
-            <label className="text-base font-medium text-cream">아이디</label>
+            <label className="text-base font-medium text-cream">이메일</label>
             <input
-              type="text"
+              type="email"
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value })}
-              placeholder="아이디를 입력하세요"
-              autoComplete="username"
+              placeholder="이메일을 입력하세요"
+              autoComplete="email"
               className="w-full px-4 py-[9px] rounded-xl text-lg text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
               style={{ background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }}
             />
