@@ -422,24 +422,8 @@ export default function GeneratePage() {
                   {showBusinessDropdown && (
                     <div
                       className="absolute top-full left-0 right-0 z-30 mt-1 rounded-xl border border-border overflow-y-auto"
-                      style={{ background: '#0d1929', maxHeight: '200px' }}
+                      style={{ background: '#0d1929', maxHeight: '220px' }}
                     >
-                      {businessTypes.map(bt => (
-                        <button
-                          key={bt.name}
-                          type="button"
-                          onClick={() => {
-                            setField('business_type', bt.name)
-                            setTypeDetected(false)
-                            setShowBusinessDropdown(false)
-                          }}
-                          className={`w-full px-4 py-2.5 text-left text-base transition-colors hover:bg-sand/10 ${
-                            form.business_type === bt.name ? 'text-sand font-bold' : 'text-cream'
-                          }`}
-                        >
-                          {bt.name}
-                        </button>
-                      ))}
                       <button
                         type="button"
                         onClick={() => {
@@ -448,10 +432,28 @@ export default function GeneratePage() {
                           setTypeDetected(false)
                           setShowBusinessDropdown(false)
                         }}
-                        className="w-full px-4 py-2.5 text-left text-base text-muted hover:bg-sand/10 border-t border-border/30 transition-colors"
+                        className="w-full px-4 py-2.5 text-left text-lg text-sand font-bold hover:bg-sand/10 border-b border-border/30 transition-colors"
                       >
                         ✏️ 직접 입력
                       </button>
+                      {[...businessTypes]
+                        .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+                        .map(bt => (
+                          <button
+                            key={bt.name}
+                            type="button"
+                            onClick={() => {
+                              setField('business_type', bt.name)
+                              setTypeDetected(false)
+                              setShowBusinessDropdown(false)
+                            }}
+                            className={`w-full px-4 py-2.5 text-left text-lg transition-colors hover:bg-sand/10 ${
+                              form.business_type === bt.name ? 'text-sand font-bold' : 'text-cream'
+                            }`}
+                          >
+                            {bt.name}
+                          </button>
+                        ))}
                     </div>
                   )}
                 </div>
