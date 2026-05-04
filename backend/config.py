@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite:///./owner_bot.db"
+    V2_DATABASE_URL: str = ""
 
     # 환경
     ENV: str = "development"
