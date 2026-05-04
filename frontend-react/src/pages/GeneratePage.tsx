@@ -1,22 +1,17 @@
-import { useState, useEffect, type ChangeEvent } from 'react'
+import { useState, useEffect, useRef, type ChangeEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 import { apiFetch } from '../lib/api'
 import { useTTS } from '../hooks/useTTS'
 import { useVoiceInput } from '../hooks/useVoiceInput'
 
-const inputClass = "w-[150px] flex-1 px-3 py-[5px] rounded-xl text-base text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+const inputClass = "w-full px-4 py-3 pr-12 rounded-xl text-xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
-const labelClass = "text-base font-medium text-cream w-[45px] shrink-0 text-right"
+const selectClass = "w-full px-4 py-3 rounded-xl text-xl text-cream border border-border focus:border-sand focus:outline-none transition-colors appearance-none"
+const labelClass = "text-lg font-medium text-cream"
 
 type Tone = 'friendly' | 'professional' | 'emotional'
 type TabKey = 'blog' | 'review' | 'shorts' | 'thumbnail'
-
-const TONE_LABELS: Record<Tone, string> = {
-  friendly: '친근하게',
-  professional: '전문적으로',
-  emotional: '감성적으로',
-}
 
 const TAB_LABELS: Record<TabKey, string> = {
   blog: '블로그',
@@ -29,8 +24,23 @@ const BUSINESS_TYPES = [
   '음식점/식당', '카페/베이커리', '피부관리/에스테틱', '헤어샵/미용실',
   '네일아트/속눈썹', '학원/교육', '헬스/필라테스', '인테리어/리모델링',
   '반려동물/펫샵', '공방/클래스', 'PC방/게임방', '쥬얼리/액세서리샵',
-  '직접 입력',
 ]
+
+const TYPE_KEYWORDS: Record<string, string> = {
+  '네일': '네일아트/속눈썹', '속눈썹': '네일아트/속눈썹',
+  '헤어': '헤어샵/미용실', '미용실': '헤어샵/미용실', '미용': '헤어샵/미용실',
+  '카페': '카페/베이커리', '베이커리': '카페/베이커리', '빵': '카페/베이커리', '커피': '카페/베이커리',
+  '피부': '피부관리/에스테틱', '에스테틱': '피부관리/에스테틱',
+  '식당': '음식점/식당', '맛집': '음식점/식당', '치킨': '음식점/식당',
+  '피자': '음식점/식당', '김밥': '음식점/식당', '국밥': '음식점/식당', '밥': '음식점/식당',
+  '학원': '학원/교육', '교육': '학원/교육', '과외': '학원/교육',
+  '헬스': '헬스/필라테스', '필라테스': '헬스/필라테스', '요가': '헬스/필라테스', '짐': '헬스/필라테스',
+  'pc방': 'PC방/게임방', '게임': 'PC방/게임방',
+  '인테리어': '인테리어/리모델링', '리모델링': '인테리어/리모델링',
+  '펫': '반려동물/펫샵', '강아지': '반려동물/펫샵', '고양이': '반려동물/펫샵',
+  '공방': '공방/클래스', '클래스': '공방/클래스',
+  '쥬얼리': '쥬얼리/액세서리샵', '액세서리': '쥬얼리/액세서리샵', '반지': '쥬얼리/액세서리샵',
+}
 
 const PACKAGES = [
   { id: 'light',  credits: 3,  price: '3,900원',  label: '라이트',  badge: '' },
@@ -77,7 +87,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="text-sm text-muted hover:text-sand transition-colors px-2 py-1 rounded-lg border border-border"
+      className="text-sm text-muted hover:text-sand transition-colors px-2 py-1 rounded-xl border border-border"
       style={{ background: 'rgba(33,58,86,0.5)' }}
     >
       {copied ? '복사됨 ✓' : '복사'}
@@ -105,7 +115,10 @@ export default function GeneratePage() {
   )
   const [activeTab, setActiveTab] = useState<TabKey>('blog')
 
-  // 크레딧 소진 모달
+  const [typeDetected, setTypeDetected] = useState(false)
+  const [typeDetecting, setTypeDetecting] = useState(false)
+  const detectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [showCreditModal, setShowCreditModal] = useState(false)
   const [charging, setCharging] = useState('')
   const [chargeMsg, setChargeMsg] = useState('')
@@ -116,20 +129,41 @@ export default function GeneratePage() {
   const setField = (key: string, value: string) =>
     setForm(f => ({ ...f, [key]: value }))
 
+  function matchBusinessType(name: string): string {
+    const normalized = name.replace(/\s/g, '').toLowerCase()
+    for (const [keyword, type] of Object.entries(TYPE_KEYWORDS)) {
+      if (normalized.includes(keyword.replace(/\s/g, '').toLowerCase())) return type
+    }
+    return ''
+  }
+
+  function handleShopNameChange(value: string) {
+    setField('shop_name', value)
+    setTypeDetected(false)
+    if (detectTimerRef.current) clearTimeout(detectTimerRef.current)
+    if (value.trim()) {
+      setTypeDetecting(true)
+      detectTimerRef.current = setTimeout(() => {
+        const matched = matchBusinessType(value)
+        if (matched) {
+          setField('business_type', matched)
+          setBusinessTypeMode('select')
+          setTypeDetected(true)
+        }
+        setTypeDetecting(false)
+      }, 600)
+    } else {
+      setTypeDetecting(false)
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
     if (!token) return
     apiFetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(data => {
-        setCredits(data.credits ?? null)
-        setForm(f => ({
-          ...f,
-          shop_name: data.business_name || f.shop_name,
-          business_type: data.business_type || f.business_type,
-        }))
-      })
+      .then(data => { setCredits(data.credits ?? null) })
       .catch(() => {})
   }, [])
 
@@ -158,10 +192,7 @@ export default function GeneratePage() {
           tone,
         }),
       })
-      if (res.status === 402) {
-        setShowCreditModal(true)
-        return
-      }
+      if (res.status === 402) { setShowCreditModal(true); return }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         setError(data.detail || `오류 ${res.status}`)
@@ -202,26 +233,19 @@ export default function GeneratePage() {
     <button
       type="button"
       onClick={() => activeField === field ? stopVoice() : startVoice(field, onResult)}
-      className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors shrink-0 ${
-        activeField === field && isListening ? 'bg-red-500 text-white' : 'text-muted border border-border'
+      className={`absolute right-3 top-1/2 -translate-y-1/2 text-xl transition-colors ${
+        activeField === field && isListening ? 'text-red-400' : 'text-muted hover:text-sand'
       }`}
-      style={!(activeField === field && isListening) ? { background: 'rgba(33,58,86,0.55)' } : {}}
       title="음성 입력"
     >
       🎤
     </button>
   )
 
-  const ttsBtn = (text: string) => (
-    <button
-      type="button"
-      onClick={() => speaking ? stop() : speak(text)}
-      className="text-sm text-muted hover:text-sand transition-colors px-2 py-1 rounded-lg border border-border"
-      style={{ background: 'rgba(33,58,86,0.5)' }}
-    >
-      {speaking ? '정지 ■' : '듣기 ▶'}
-    </button>
-  )
+  const voiceHint = (field: string) =>
+    voiceStatus && activeField === field ? (
+      <p className="text-sm text-sand mt-1">• {voiceStatus}</p>
+    ) : null
 
   return (
     <div className="min-h-screen text-cream flex flex-col relative overflow-hidden" style={{ background: '#020609' }}>
@@ -292,14 +316,14 @@ export default function GeneratePage() {
               <button
                 type="button"
                 onClick={toggleTTS}
-                className={`text-xs px-2 py-1 rounded-lg border transition-colors ${ttsEnabled ? 'border-sand text-sand' : 'border-border text-muted'}`}
+                className={`text-xs px-2 py-1 rounded-xl border transition-colors ${ttsEnabled ? 'border-sand text-sand' : 'border-border text-muted'}`}
                 style={{ background: 'rgba(33,58,86,0.5)' }}
               >
                 {ttsEnabled ? '🔊 ON' : '🔇 OFF'}
               </button>
             </div>
           </div>
-          <p className="text-base text-muted">AI가 마케팅 콘텐츠를 만들어드립니다</p>
+          <p className="text-base text-muted">가게 정보만 입력하면 인공지능이 알아서 글을 써줍니다.</p>
         </div>
 
         {/* 비로그인 배너 */}
@@ -312,94 +336,147 @@ export default function GeneratePage() {
           </div>
         )}
 
-        {/* 음성 상태 */}
-        {voiceStatus && (
-          <p className="text-sm text-sand text-center">{voiceStatus}</p>
-        )}
-
         {!result ? (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-[10px]">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-            <div className="flex items-center gap-[14px]">
-              <label className={labelClass}>상호명</label>
-              <input type="text" value={form.shop_name} onChange={set('shop_name')}
-                placeholder="가게 이름" className={inputClass} style={inputStyle} />
-              {micBtn('shop_name', t => setField('shop_name', t))}
+            {/* 1. 가게 이름 */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>1. 가게 이름 <span className="text-red-400">*</span></label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={form.shop_name}
+                  onChange={e => handleShopNameChange(e.target.value)}
+                  placeholder="예) 강남 김밥천국, 홍대 네일아트"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+                {micBtn('shop_name', t => handleShopNameChange(t))}
+              </div>
+              {voiceHint('shop_name')}
             </div>
 
-            {/* 업종 선택 */}
-            <div className="flex items-start gap-[14px]">
-              <label className={`${labelClass} pt-[6px]`}>업종</label>
-              <div className="flex-1 flex flex-col gap-2">
-                {businessTypeMode === 'select' ? (
-                  <select
-                    value={form.business_type}
-                    onChange={e => {
-                      const v = e.target.value
-                      if (v === '직접 입력') {
-                        setBusinessTypeMode('input')
-                        setForm(f => ({ ...f, business_type: '' }))
-                      } else {
-                        setForm(f => ({ ...f, business_type: v }))
-                      }
-                    }}
-                    className={`${inputClass} w-full`}
-                    style={inputStyle}
-                  >
-                    <option value="">업종 선택</option>
-                    {BUSINESS_TYPES.map(bt => (
-                      <option key={bt} value={bt}>{bt}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="flex gap-2">
-                    <input type="text" value={form.business_type} onChange={set('business_type')}
-                      placeholder="업종 직접 입력" className={inputClass} style={inputStyle} autoFocus />
-                    <button type="button" onClick={() => setBusinessTypeMode('select')}
-                      className="text-sm text-muted hover:text-sand shrink-0">목록</button>
-                  </div>
+            {/* 2. 업종 */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <label className={labelClass}>2. 업종 <span className="text-red-400">*</span></label>
+                {typeDetecting && <span className="text-sand text-sm animate-pulse">AI 분석 중...</span>}
+                {!typeDetecting && typeDetected && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-sand/20 text-sand border border-sand/30">AI 감지</span>
                 )}
               </div>
-            </div>
-
-            <div className="flex items-center gap-[14px]">
-              <label className={labelClass}>지역</label>
-              <input type="text" value={form.region} onChange={set('region')}
-                placeholder="강남, 홍대, 부산 등" className={inputClass} style={inputStyle} />
-              {micBtn('region', t => setField('region', t))}
-            </div>
-
-            <div className="flex items-center gap-[14px]">
-              <label className={labelClass}>키워드</label>
-              <input type="text" value={form.keyword} onChange={set('keyword')}
-                placeholder="핵심 키워드 1개" className={inputClass} style={inputStyle} />
-              {micBtn('keyword', t => setField('keyword', t))}
-            </div>
-
-            <div className="flex items-center gap-[14px]">
-              <label className={labelClass}>특징</label>
-              <input type="text" value={form.feature} onChange={set('feature')}
-                placeholder="특별한 점 (선택)" className={inputClass} style={inputStyle} />
-              {micBtn('feature', t => setField('feature', t))}
-            </div>
-
-            <div className="flex items-center gap-[14px] mt-1">
-              <span className={labelClass}>톤</span>
-              <div className="flex-1 flex gap-2">
-                {(Object.keys(TONE_LABELS) as Tone[]).map(t => (
+              {businessTypeMode === 'select' ? (
+                <select
+                  value={form.business_type}
+                  onChange={e => {
+                    const v = e.target.value
+                    if (v === '__direct__') {
+                      setBusinessTypeMode('input')
+                      setField('business_type', '')
+                      setTypeDetected(false)
+                    } else {
+                      setField('business_type', v)
+                      setTypeDetected(false)
+                    }
+                  }}
+                  className={selectClass}
+                  style={inputStyle}
+                >
+                  <option value="">업종 선택</option>
+                  {BUSINESS_TYPES.map(bt => (
+                    <option key={bt} value={bt}>{bt}</option>
+                  ))}
+                  <option value="__direct__">직접 입력</option>
+                </select>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={form.business_type}
+                    onChange={set('business_type')}
+                    placeholder="업종 직접 입력"
+                    className={inputClass}
+                    style={inputStyle}
+                    autoFocus
+                  />
                   <button
-                    key={t}
                     type="button"
-                    onClick={() => setTone(t)}
-                    className={`flex-1 py-[6px] rounded-xl text-sm font-bold transition-colors ${
-                      tone === t ? 'bg-[#b89973] text-navy' : 'text-muted border border-border'
-                    }`}
-                    style={tone !== t ? { background: 'rgba(33,58,86,0.55)' } : {}}
+                    onClick={() => setBusinessTypeMode('select')}
+                    className="text-sm text-muted hover:text-sand shrink-0 px-2"
                   >
-                    {TONE_LABELS[t]}
+                    목록
                   </button>
-                ))}
+                </div>
+              )}
+            </div>
+
+            {/* 3. 지역 */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>3. 지역 <span className="text-red-400">*</span></label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={form.region}
+                  onChange={set('region')}
+                  placeholder="예) 서울 강남구, 김포 장기동"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+                {micBtn('region', t => setField('region', t))}
               </div>
+              {voiceHint('region')}
+            </div>
+
+            {/* 4. 노출하고 싶은 키워드 */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>4. 노출하고 싶은 키워드 <span className="text-red-400">*</span></label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={form.keyword}
+                  onChange={set('keyword')}
+                  placeholder="예) 장기동 피부관리, 강남역 맛집"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+                {micBtn('keyword', t => setField('keyword', t))}
+              </div>
+              {voiceHint('keyword')}
+            </div>
+
+            {/* 5. 우리 가게만의 특징 */}
+            <div className="flex flex-col gap-1.5">
+              <label className={`${labelClass} flex items-center gap-2`}>
+                5. 우리 가게만의 특징
+                <span className="text-xs px-2 py-0.5 rounded bg-sand/20 text-sand font-normal">선택</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={form.feature}
+                  onChange={set('feature')}
+                  placeholder="입력하면 홍보 효과가 훨씬 좋아져요! (예: 20년 경력)"
+                  className={inputClass}
+                  style={inputStyle}
+                />
+                {micBtn('feature', t => setField('feature', t))}
+              </div>
+              {voiceHint('feature')}
+            </div>
+
+            {/* 6. 글의 분위기 (톤) */}
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>6. 글의 분위기 (톤)</label>
+              <select
+                value={tone}
+                onChange={e => setTone(e.target.value as Tone)}
+                className={selectClass}
+                style={inputStyle}
+              >
+                <option value="friendly">😊 친근하고 다정한 느낌</option>
+                <option value="professional">🧐 전문적이고 신뢰감 있는 느낌</option>
+                <option value="emotional">✨ 감성적이고 부드러운 느낌</option>
+              </select>
             </div>
 
             {error && <p className="text-base text-red-400 text-center">{error}</p>}
@@ -407,10 +484,10 @@ export default function GeneratePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-2 shadow-lg"
+              className="w-full py-4 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.4rem] hover:bg-camel transition-all active:translate-y-[2px] disabled:opacity-60 mt-2 shadow-lg"
               style={{ borderBottom: '4px solid rgba(255,255,255,0.55)' }}
             >
-              {loading ? 'AI 생성 중...' : '콘텐츠 생성 →'}
+              {loading ? 'AI 생성 중...' : '마케팅 콘텐츠 생성하기'}
             </button>
 
           </form>
@@ -432,7 +509,6 @@ export default function GeneratePage() {
               ))}
             </div>
 
-            {/* 탭 내용 */}
             <div className="flex flex-col gap-5">
 
               {activeTab === 'blog' && (
@@ -440,7 +516,7 @@ export default function GeneratePage() {
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted">블로그 포스팅</p>
                     <div className="flex gap-2">
-                      {ttsBtn(`${result.blog.title}\n${result.blog.body}`)}
+                      <button type="button" onClick={() => speaking ? stop() : speak(`${result.blog.title}\n${result.blog.body}`)} className="text-sm text-muted hover:text-sand transition-colors px-2 py-1 rounded-xl border border-border" style={{ background: 'rgba(33,58,86,0.5)' }}>{speaking ? '정지 ■' : '듣기 ▶'}</button>
                       <CopyButton text={`${result.blog.title}\n\n${result.blog.body}\n\n${result.blog.hashtags}`} />
                     </div>
                   </div>
@@ -455,22 +531,13 @@ export default function GeneratePage() {
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted">리뷰 & 답글</p>
                     <div className="flex gap-2">
-                      {ttsBtn(result.review.customer_review)}
+                      <button type="button" onClick={() => speaking ? stop() : speak(result.review.customer_review)} className="text-sm text-muted hover:text-sand transition-colors px-2 py-1 rounded-xl border border-border" style={{ background: 'rgba(33,58,86,0.5)' }}>{speaking ? '정지 ■' : '듣기 ▶'}</button>
                       <CopyButton text={`[고객 리뷰]\n${result.review.customer_review}\n\n[답글 1]\n${result.review.owner_reply_1}\n\n[답글 2]\n${result.review.owner_reply_2}`} />
                     </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">고객 리뷰</p>
-                    <p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.review.customer_review}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">사장님 답글 1</p>
-                    <p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.review.owner_reply_1}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">사장님 답글 2</p>
-                    <p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.review.owner_reply_2}</p>
-                  </div>
+                  <div><p className="text-sm text-muted mb-2">고객 리뷰</p><p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.review.customer_review}</p></div>
+                  <div><p className="text-sm text-muted mb-2">사장님 답글 1</p><p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.review.owner_reply_1}</p></div>
+                  <div><p className="text-sm text-muted mb-2">사장님 답글 2</p><p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.review.owner_reply_2}</p></div>
                 </>
               )}
 
@@ -479,14 +546,11 @@ export default function GeneratePage() {
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted">쇼츠/릴스 대본</p>
                     <div className="flex gap-2">
-                      {ttsBtn(result.shorts.concept)}
+                      <button type="button" onClick={() => speaking ? stop() : speak(result.shorts.concept)} className="text-sm text-muted hover:text-sand transition-colors px-2 py-1 rounded-xl border border-border" style={{ background: 'rgba(33,58,86,0.5)' }}>{speaking ? '정지 ■' : '듣기 ▶'}</button>
                       <CopyButton text={`[컨셉]\n${result.shorts.concept}\n\n[인스타 본문]\n${result.shorts.instagram_body}`} />
                     </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted mb-1">컨셉</p>
-                    <p className="text-base text-cream">{result.shorts.concept}</p>
-                  </div>
+                  <div><p className="text-sm text-muted mb-1">컨셉</p><p className="text-base text-cream">{result.shorts.concept}</p></div>
                   <div>
                     <p className="text-sm text-muted mb-2">타임라인</p>
                     <div className="flex flex-col gap-3">
@@ -499,15 +563,8 @@ export default function GeneratePage() {
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">촬영 팁</p>
-                    <p className="text-base text-cream">{result.shorts.filming_tips?.overall}</p>
-                    <p className="text-sm text-muted mt-2">BGM: {result.shorts.filming_tips?.bgm}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted mb-1">인스타 본문</p>
-                    <p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.shorts.instagram_body}</p>
-                  </div>
+                  <div><p className="text-sm text-muted mb-2">촬영 팁</p><p className="text-base text-cream">{result.shorts.filming_tips?.overall}</p><p className="text-sm text-muted mt-2">BGM: {result.shorts.filming_tips?.bgm}</p></div>
+                  <div><p className="text-sm text-muted mb-1">인스타 본문</p><p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.shorts.instagram_body}</p></div>
                 </>
               )}
 
@@ -517,29 +574,10 @@ export default function GeneratePage() {
                     <p className="text-sm text-muted">썸네일 기획</p>
                     <CopyButton text={`[카피]\n숫자형: ${result.thumbnail.copies?.number_type}\n질문형: ${result.thumbnail.copies?.question_type}\n감성형: ${result.thumbnail.copies?.emotion_type}`} />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">카피</p>
-                    <p className="text-base text-cream">숫자형: {result.thumbnail.copies?.number_type}</p>
-                    <p className="text-base text-cream">질문형: {result.thumbnail.copies?.question_type}</p>
-                    <p className="text-base text-cream">감성형: {result.thumbnail.copies?.emotion_type}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">메인 이미지 가이드</p>
-                    <p className="text-base text-cream">베스트: {result.thumbnail.main_image_guide?.best_shot}</p>
-                    <p className="text-sm text-muted mt-1">피할 것: {result.thumbnail.main_image_guide?.avoid}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">디자인 가이드</p>
-                    <p className="text-base text-cream">배경: {result.thumbnail.design_guide?.background}</p>
-                    <p className="text-base text-cream">폰트: {result.thumbnail.design_guide?.font_style}</p>
-                    <p className="text-base text-cream">포인트색: {result.thumbnail.design_guide?.point_color}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted mb-2">CTA</p>
-                    {result.thumbnail.cta?.map((c, i) => (
-                      <p key={i} className="text-base text-cream">{c}</p>
-                    ))}
-                  </div>
+                  <div><p className="text-sm text-muted mb-2">카피</p><p className="text-base text-cream">숫자형: {result.thumbnail.copies?.number_type}</p><p className="text-base text-cream">질문형: {result.thumbnail.copies?.question_type}</p><p className="text-base text-cream">감성형: {result.thumbnail.copies?.emotion_type}</p></div>
+                  <div><p className="text-sm text-muted mb-2">메인 이미지 가이드</p><p className="text-base text-cream">베스트: {result.thumbnail.main_image_guide?.best_shot}</p><p className="text-sm text-muted mt-1">피할 것: {result.thumbnail.main_image_guide?.avoid}</p></div>
+                  <div><p className="text-sm text-muted mb-2">디자인 가이드</p><p className="text-base text-cream">배경: {result.thumbnail.design_guide?.background}</p><p className="text-base text-cream">폰트: {result.thumbnail.design_guide?.font_style}</p><p className="text-base text-cream">포인트색: {result.thumbnail.design_guide?.point_color}</p></div>
+                  <div><p className="text-sm text-muted mb-2">CTA</p>{result.thumbnail.cta?.map((c, i) => (<p key={i} className="text-base text-cream">{c}</p>))}</div>
                 </>
               )}
 
