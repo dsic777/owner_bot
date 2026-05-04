@@ -12,6 +12,7 @@ from api.router import api_router
 from modules.user.models import User
 from modules.generate.models import GenerationHistory, GuestUsage
 from modules.history.models import CreditTransaction, Subscription
+from modules.business_type.models import BusinessType
 
 app = FastAPI(
     title="사장봇 API",

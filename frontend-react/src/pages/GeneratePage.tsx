@@ -20,26 +20,39 @@ const TAB_LABELS: Record<TabKey, string> = {
   thumbnail: '썸네일',
 }
 
-const BUSINESS_TYPES = [
-  '음식점/식당', '카페/베이커리', '피부관리/에스테틱', '헤어샵/미용실',
-  '네일아트/속눈썹', '학원/교육', '헬스/필라테스', '인테리어/리모델링',
-  '반려동물/펫샵', '공방/클래스', 'PC방/게임방', '쥬얼리/액세서리샵',
-]
+interface BusinessTypeItem {
+  name: string
+  competitor_keyword?: string | null
+  secondary_keyword?: string | null
+  competitor_radius?: number | null
+  kakao_group_code?: string | null
+  kakao_category_filter?: string | null
+  aliases?: string | null
+}
 
-const TYPE_KEYWORDS: Record<string, string> = {
-  '네일': '네일아트/속눈썹', '속눈썹': '네일아트/속눈썹',
-  '헤어': '헤어샵/미용실', '미용실': '헤어샵/미용실', '미용': '헤어샵/미용실',
-  '카페': '카페/베이커리', '베이커리': '카페/베이커리', '빵': '카페/베이커리', '커피': '카페/베이커리',
-  '피부': '피부관리/에스테틱', '에스테틱': '피부관리/에스테틱',
-  '식당': '음식점/식당', '맛집': '음식점/식당', '치킨': '음식점/식당',
-  '피자': '음식점/식당', '김밥': '음식점/식당', '국밥': '음식점/식당', '밥': '음식점/식당',
-  '학원': '학원/교육', '교육': '학원/교육', '과외': '학원/교육',
-  '헬스': '헬스/필라테스', '필라테스': '헬스/필라테스', '요가': '헬스/필라테스', '짐': '헬스/필라테스',
-  'pc방': 'PC방/게임방', '게임': 'PC방/게임방',
-  '인테리어': '인테리어/리모델링', '리모델링': '인테리어/리모델링',
-  '펫': '반려동물/펫샵', '강아지': '반려동물/펫샵', '고양이': '반려동물/펫샵',
-  '공방': '공방/클래스', '클래스': '공방/클래스',
-  '쥬얼리': '쥬얼리/액세서리샵', '액세서리': '쥬얼리/액세서리샵', '반지': '쥬얼리/액세서리샵',
+const KAKAO_PICKER_GROUPS = [
+  { code: 'FD6', label: '음식점' },
+  { code: 'CE7', label: '카페' },
+  { code: 'AC5', label: '학원' },
+  { code: 'CS2', label: '편의점' },
+  { code: 'HP8', label: '병원' },
+]
+const KAKAO_PICKER_CHILDREN: Record<string, { filter: string | null; label: string }[]> = {
+  FD6: [
+    { filter: '한식', label: '한식' }, { filter: '중식', label: '중식' },
+    { filter: '일식', label: '일식' }, { filter: '양식', label: '양식' },
+    { filter: '치킨', label: '치킨' }, { filter: '피자', label: '피자' },
+    { filter: '분식', label: '분식' }, { filter: null, label: '기타 음식점' },
+  ],
+  CE7: [
+    { filter: null, label: '카페' }, { filter: '베이커리', label: '베이커리' },
+    { filter: '아이스크림', label: '아이스크림/빙수' },
+  ],
+  AC5: [
+    { filter: '입시', label: '입시/수능' }, { filter: '어학', label: '어학원' },
+    { filter: '예능', label: '예능학원' }, { filter: '체육', label: '체육학원' },
+    { filter: null, label: '기타 학원' },
+  ],
 }
 
 const PACKAGES = [
@@ -105,6 +118,9 @@ export default function GeneratePage() {
     shop_name: '', business_type: '', region: '', keyword: '', feature: '',
   })
   const [businessTypeMode, setBusinessTypeMode] = useState<'select' | 'input'>('select')
+  const [businessTypes, setBusinessTypes] = useState<BusinessTypeItem[]>([])
+  const [showKakaoPicker, setShowKakaoPicker] = useState(false)
+  const [pickerGroup, setPickerGroup] = useState<string | null>(null)
   const [tone, setTone] = useState<Tone>('friendly')
   const [credits, setCredits] = useState<number | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -129,33 +145,52 @@ export default function GeneratePage() {
   const setField = (key: string, value: string) =>
     setForm(f => ({ ...f, [key]: value }))
 
-  function matchBusinessType(name: string): string {
-    const normalized = name.replace(/\s/g, '').toLowerCase()
-    for (const [keyword, type] of Object.entries(TYPE_KEYWORDS)) {
-      if (normalized.includes(keyword.replace(/\s/g, '').toLowerCase())) return type
-    }
-    return ''
-  }
-
   function handleShopNameChange(value: string) {
     setField('shop_name', value)
     setTypeDetected(false)
     if (detectTimerRef.current) clearTimeout(detectTimerRef.current)
-    if (value.trim()) {
+    if (value.trim() && businessTypes.length > 0) {
       setTypeDetecting(true)
-      detectTimerRef.current = setTimeout(() => {
-        const matched = matchBusinessType(value)
-        if (matched) {
-          setField('business_type', matched)
-          setBusinessTypeMode('select')
-          setTypeDetected(true)
-        }
+      detectTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await apiFetch('/api/business-types/detect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              business_name: value,
+              available_types: businessTypes.map(t => t.name),
+            }),
+          })
+          const data = await res.json()
+          if (data.type_name) {
+            setField('business_type', data.type_name)
+            setBusinessTypeMode('select')
+            setTypeDetected(true)
+          }
+        } catch {}
         setTypeDetecting(false)
-      }, 600)
+      }, 900)
     } else {
       setTypeDetecting(false)
     }
   }
+
+  function handleKakaoPick(groupCode: string | null, filter: string | null) {
+    const match =
+      businessTypes.find(bt => bt.kakao_group_code === groupCode && bt.kakao_category_filter === filter) ||
+      businessTypes.find(bt => bt.kakao_group_code === groupCode && !bt.kakao_category_filter)
+    setField('business_type', match?.name || '')
+    setTypeDetected(false)
+    setShowKakaoPicker(false)
+    setPickerGroup(null)
+  }
+
+  useEffect(() => {
+    apiFetch('/api/business-types')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data) && data.length > 0) setBusinessTypes(data) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -232,13 +267,19 @@ export default function GeneratePage() {
   const micBtn = (field: string, onResult: (t: string) => void) => (
     <button
       type="button"
+      onMouseDown={e => e.preventDefault()}
       onClick={() => activeField === field ? stopVoice() : startVoice(field, onResult)}
-      className={`absolute right-3 top-1/2 -translate-y-1/2 text-xl transition-colors ${
-        activeField === field && isListening ? 'text-red-400' : 'text-muted hover:text-sand'
+      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 transition-colors ${
+        activeField === field && isListening ? 'opacity-100' : 'opacity-50 hover:opacity-100'
       }`}
       title="음성 입력"
     >
-      🎤
+      <img
+        src="/mic.png"
+        className="w-5 h-5 object-contain"
+        alt="음성입력"
+        style={{ filter: activeField === field && isListening ? 'brightness(0) saturate(100%) invert(30%) sepia(90%) saturate(700%) hue-rotate(330deg)' : undefined }}
+      />
     </button>
   )
 
@@ -383,10 +424,10 @@ export default function GeneratePage() {
                   style={inputStyle}
                 >
                   <option value="">업종 선택</option>
-                  {BUSINESS_TYPES.map(bt => (
-                    <option key={bt} value={bt}>{bt}</option>
+                  {businessTypes.map(bt => (
+                    <option key={bt.name} value={bt.name}>{bt.name}</option>
                   ))}
-                  <option value="__direct__">직접 입력</option>
+                  <option value="__direct__">✏️ 직접 입력</option>
                 </select>
               ) : (
                 <div className="flex gap-2">
@@ -406,6 +447,54 @@ export default function GeneratePage() {
                   >
                     목록
                   </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => { setShowKakaoPicker(v => !v); setPickerGroup(null) }}
+                className="mt-0.5 text-sand text-sm underline hover:text-camel transition-colors text-left"
+              >
+                {showKakaoPicker ? '▲ 카카오 분류 닫기' : '▼ 카카오 분류로 찾기'}
+              </button>
+              {showKakaoPicker && (
+                <div className="rounded-xl border border-border p-3 flex flex-col gap-2" style={{ background: '#0d1929' }}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {KAKAO_PICKER_GROUPS.map(g => (
+                      <button
+                        key={g.code}
+                        type="button"
+                        onClick={() => setPickerGroup(pickerGroup === g.code ? null : g.code)}
+                        className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                          pickerGroup === g.code ? 'bg-sand/20 border-sand text-cream font-bold' : 'border-border text-muted hover:border-sand/50 hover:text-cream'
+                        }`}
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+                  {pickerGroup && KAKAO_PICKER_CHILDREN[pickerGroup] && (
+                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border/40">
+                      {KAKAO_PICKER_CHILDREN[pickerGroup].map(c => (
+                        <button
+                          key={String(c.filter)}
+                          type="button"
+                          onClick={() => handleKakaoPick(pickerGroup, c.filter)}
+                          className="px-3 py-1.5 rounded-lg text-sm border border-border text-muted hover:border-sand hover:text-cream transition-colors"
+                        >
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {pickerGroup && !KAKAO_PICKER_CHILDREN[pickerGroup] && (
+                    <button
+                      type="button"
+                      onClick={() => handleKakaoPick(pickerGroup, null)}
+                      className="mt-1 w-full py-1.5 rounded-lg bg-sand text-navy font-bold text-sm"
+                    >
+                      {KAKAO_PICKER_GROUPS.find(g => g.code === pickerGroup)?.label} 선택
+                    </button>
+                  )}
                 </div>
               )}
             </div>
