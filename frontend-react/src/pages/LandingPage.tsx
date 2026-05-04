@@ -31,8 +31,9 @@ export default function LandingPage() {
 
         <div className="text-center">
           <h2 className="text-[2.2rem] font-bold leading-tight mb-3 drop-shadow-lg">
-            사장님의 마케팅<br />
-            <span className="text-sand">AI가 대신합니다</span>
+            가게 홍보글,<br />
+            네이버에서 검색되는<br />
+            <span className="text-sand">글로 만드세요.</span>
           </h2>
           <p className="text-[1.25rem] text-cream leading-relaxed drop-shadow">
             블로그 · 리뷰답글 · 쇼츠기획 · 썸네일
