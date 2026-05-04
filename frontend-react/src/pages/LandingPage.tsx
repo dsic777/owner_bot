@@ -51,19 +51,21 @@ export default function LandingPage() {
         </div>
 
         <div className="w-[80%] flex flex-col gap-3 mx-auto">
-          <button
-            onClick={() => navigate('/generate')}
-            className="w-full py-2 rounded-lg bg-[#b89973] text-darkbrown font-bold text-[1.55rem] hover:bg-camel transition-all active:translate-y-[2px]"
-            style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
-          >
-            {isLoggedIn ? '콘텐츠 생성 →' : '무료 체험하기'}
-          </button>
+          {isLoggedIn && (
+            <button
+              onClick={() => navigate('/generate')}
+              className="w-full py-2 rounded-lg bg-[#b89973] text-darkbrown font-bold text-[1.55rem] hover:bg-camel transition-all active:translate-y-[2px]"
+              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
+            >
+              콘텐츠 생성 →
+            </button>
+          )}
 
           {!isLoggedIn && (
             <button
               onClick={() => navigate('/register')}
-              className="w-full py-2 rounded-lg bg-[#b89973] text-black font-bold text-[1.55rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #888, 0 8px 16px rgba(0,0,0,0.25)' }}
+              className="w-full py-2 rounded-lg bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
+              style={{ boxShadow: '0 4px 0 #555, 0 8px 16px rgba(0,0,0,0.3)' }}
             >
               회원가입 — 3크레딧 무료 지급
             </button>
