@@ -7,7 +7,6 @@ import { useVoiceInput } from '../hooks/useVoiceInput'
 
 const inputClass = "w-full px-4 py-3 pr-12 rounded-xl text-xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
-const selectClass = "w-full px-4 py-3 rounded-xl text-xl text-cream border border-border focus:border-sand focus:outline-none transition-colors appearance-none"
 const labelClass = "text-lg font-medium text-cream"
 
 type Tone = 'friendly' | 'professional' | 'emotional'
@@ -119,6 +118,7 @@ export default function GeneratePage() {
   })
   const [businessTypeMode, setBusinessTypeMode] = useState<'select' | 'input'>('select')
   const [businessTypes, setBusinessTypes] = useState<BusinessTypeItem[]>([])
+  const [showBusinessDropdown, setShowBusinessDropdown] = useState(false)
   const [showKakaoPicker, setShowKakaoPicker] = useState(false)
   const [pickerGroup, setPickerGroup] = useState<string | null>(null)
   const [tone, setTone] = useState<Tone>('friendly')
@@ -275,7 +275,7 @@ export default function GeneratePage() {
       title="음성 입력"
     >
       <img
-        src="/mic.png"
+        src={`${import.meta.env.BASE_URL}mic.png`}
         className="w-5 h-5 object-contain"
         alt="음성입력"
         style={{ filter: activeField === field && isListening ? 'brightness(0) saturate(100%) invert(30%) sepia(90%) saturate(700%) hue-rotate(330deg)' : undefined }}
@@ -407,28 +407,54 @@ export default function GeneratePage() {
                 )}
               </div>
               {businessTypeMode === 'select' ? (
-                <select
-                  value={form.business_type}
-                  onChange={e => {
-                    const v = e.target.value
-                    if (v === '__direct__') {
-                      setBusinessTypeMode('input')
-                      setField('business_type', '')
-                      setTypeDetected(false)
-                    } else {
-                      setField('business_type', v)
-                      setTypeDetected(false)
-                    }
-                  }}
-                  className={selectClass}
-                  style={inputStyle}
-                >
-                  <option value="">업종 선택</option>
-                  {businessTypes.map(bt => (
-                    <option key={bt.name} value={bt.name}>{bt.name}</option>
-                  ))}
-                  <option value="__direct__">✏️ 직접 입력</option>
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowBusinessDropdown(v => !v)}
+                    className="w-full px-4 py-3 rounded-xl text-xl text-left flex items-center justify-between border border-border focus:border-sand transition-colors"
+                    style={inputStyle}
+                  >
+                    <span className={form.business_type ? 'text-cream' : 'text-muted'}>
+                      {form.business_type || '업종 선택'}
+                    </span>
+                    <span className="text-muted text-base ml-2">{showBusinessDropdown ? '▲' : '▼'}</span>
+                  </button>
+                  {showBusinessDropdown && (
+                    <div
+                      className="absolute top-full left-0 right-0 z-30 mt-1 rounded-xl border border-border overflow-y-auto"
+                      style={{ background: '#0d1929', maxHeight: '200px' }}
+                    >
+                      {businessTypes.map(bt => (
+                        <button
+                          key={bt.name}
+                          type="button"
+                          onClick={() => {
+                            setField('business_type', bt.name)
+                            setTypeDetected(false)
+                            setShowBusinessDropdown(false)
+                          }}
+                          className={`w-full px-4 py-2.5 text-left text-base transition-colors hover:bg-sand/10 ${
+                            form.business_type === bt.name ? 'text-sand font-bold' : 'text-cream'
+                          }`}
+                        >
+                          {bt.name}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBusinessTypeMode('input')
+                          setField('business_type', '')
+                          setTypeDetected(false)
+                          setShowBusinessDropdown(false)
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-base text-muted hover:bg-sand/10 border-t border-border/30 transition-colors"
+                      >
+                        ✏️ 직접 입력
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="flex gap-2">
                   <input
@@ -442,7 +468,7 @@ export default function GeneratePage() {
                   />
                   <button
                     type="button"
-                    onClick={() => setBusinessTypeMode('select')}
+                    onClick={() => { setBusinessTypeMode('select'); setShowBusinessDropdown(false) }}
                     className="text-sm text-muted hover:text-sand shrink-0 px-2"
                   >
                     목록
@@ -556,16 +582,21 @@ export default function GeneratePage() {
             {/* 6. 글의 분위기 (톤) */}
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>6. 글의 분위기 (톤)</label>
-              <select
-                value={tone}
-                onChange={e => setTone(e.target.value as Tone)}
-                className={selectClass}
-                style={inputStyle}
-              >
-                <option value="friendly">😊 친근하고 다정한 느낌</option>
-                <option value="professional">🧐 전문적이고 신뢰감 있는 느낌</option>
-                <option value="emotional">✨ 감성적이고 부드러운 느낌</option>
-              </select>
+              <div className="flex gap-2">
+                {(['friendly', 'professional', 'emotional'] as Tone[]).map((t, i) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTone(t)}
+                    className={`flex-1 py-3 rounded-xl text-base font-bold transition-colors ${
+                      tone === t ? 'bg-[#b89973] text-navy' : 'text-muted border border-border'
+                    }`}
+                    style={tone !== t ? { background: 'rgba(33,58,86,0.55)' } : {}}
+                  >
+                    {['친근하게', '전문적으로', '감성적으로'][i]}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {error && <p className="text-base text-red-400 text-center">{error}</p>}
