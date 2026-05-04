@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 import { apiFetch } from '../lib/api'
 
-const inputClass = "w-full px-4 py-[9px] rounded-xl text-lg text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+const inputClass = "w-full px-4 py-[9px] rounded-xl text-xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
 
 export default function RegisterPage() {
@@ -67,27 +67,27 @@ export default function RegisterPage() {
 
         <div className="text-center mb-2">
           <h2 className="text-[2.2rem] font-bold text-cream mb-1">사장봇 시작하기</h2>
-          <p className="text-base text-sand">단 10초면 마케팅 준비가 끝납니다.</p>
+          <p className="text-lg text-sand">단 10초면 마케팅 준비가 끝납니다.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
           <div className="flex flex-col gap-2">
-            <label className="text-base font-medium text-cream">이메일</label>
+            <label className="text-lg font-medium text-cream">이메일</label>
             <input type="email" value={form.username} onChange={set('username')}
               placeholder="example@email.com" autoComplete="email"
               className={inputClass} style={inputStyle} />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-base font-medium text-cream">사장님 성함 (또는 닉네임)</label>
+            <label className="text-lg font-medium text-cream">사장님 성함 (또는 닉네임)</label>
             <input type="text" value={form.nickname} onChange={set('nickname')}
               placeholder="홍길동" autoComplete="name"
               className={inputClass} style={inputStyle} />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-base font-medium text-cream">비밀번호</label>
+            <label className="text-lg font-medium text-cream">비밀번호</label>
             <input type="password" value={form.password} onChange={set('password')}
               placeholder="비밀번호를 입력해주세요" autoComplete="new-password"
               className={inputClass} style={inputStyle} />
