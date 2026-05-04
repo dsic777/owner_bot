@@ -64,8 +64,8 @@ export default function LandingPage() {
           {!isLoggedIn && (
             <button
               onClick={() => navigate('/register')}
-              className="w-full py-2 rounded-lg bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #555, 0 8px 16px rgba(0,0,0,0.3)' }}
+              className="w-full h-[60px] flex items-center justify-center rounded-lg bg-[#b89973] text-black font-bold text-[1.35rem] hover:bg-camel transition-all active:translate-y-[2px]"
+              style={{ boxShadow: '0 4px 0 #555, 0 8px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.45)' }}
             >
               회원가입 — 3크레딧 무료 지급
             </button>
