@@ -16,7 +16,7 @@ const STARS = [
   { x: 380, y: 178, r: 0.7, o: 0.60 }, { x: 8,   y: 198, r: 0.9, o: 0.55 },
 ]
 
-export default function NightBackground() {
+export default function NightBackground({ noBuilding = false }: { noBuilding?: boolean }) {
   return (
     <>
     <svg
@@ -55,12 +55,14 @@ export default function NightBackground() {
         ))}
       </svg>
 
-      <img
-        src={`${import.meta.env.BASE_URL}bottom.png`}
-        alt=""
-        className="fixed bottom-0 left-0 w-full pointer-events-none"
-        style={{ height: '160px', objectFit: 'cover', objectPosition: 'bottom', zIndex: 1 }}
-      />
+      {!noBuilding && (
+        <img
+          src={`${import.meta.env.BASE_URL}bottom.png`}
+          alt=""
+          className="fixed bottom-0 left-0 w-full pointer-events-none"
+          style={{ height: '160px', objectFit: 'cover', objectPosition: 'bottom', zIndex: 1 }}
+        />
+      )}
     </>
   )
 }
