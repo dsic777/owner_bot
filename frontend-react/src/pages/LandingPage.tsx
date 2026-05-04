@@ -40,12 +40,12 @@ export default function LandingPage() {
         </div>
 
         {/* 아이콘 이미지 */}
-        <div className="overflow-hidden rounded-xl mx-auto" style={{ width: '95%', maxHeight: '114px' }}>
+        <div className="overflow-hidden rounded-xl mx-auto" style={{ width: '90%', maxHeight: '108px' }}>
           <img
             src="/ownerbot/main.png"
             alt="블로그 리뷰답글 쇼츠기획 썸네일"
             className="w-full object-cover"
-            style={{ objectPosition: 'center 30%', height: '114px' }}
+            style={{ objectPosition: 'center 30%', height: '108px' }}
           />
         </div>
 
