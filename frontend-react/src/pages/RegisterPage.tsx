@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 import { apiFetch } from '../lib/api'
 
-const inputClass = "w-[150px] flex-1 px-3 py-[4px] rounded-xl text-base text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+const inputClass = "w-full px-4 py-[9px] rounded-xl text-lg text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
-const labelClass = "text-base font-medium text-cream w-[60px] shrink-0 text-right"
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -66,31 +65,31 @@ export default function RegisterPage() {
 
       <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[80px] overflow-y-auto">
 
-        <div>
-          <h2 className="text-3xl font-bold text-cream mb-1">회원가입</h2>
-          <p className="text-base text-muted">3크레딧을 무료로 받으세요</p>
+        <div className="text-center mb-2">
+          <h2 className="text-[2.2rem] font-bold text-cream mb-1">사장봇 시작하기</h2>
+          <p className="text-base text-sand">단 10초면 마케팅 준비가 끝납니다.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-[12px]">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>이메일</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-base font-medium text-cream">이메일</label>
             <input type="email" value={form.username} onChange={set('username')}
-              placeholder="로그인에 사용할 이메일" autoComplete="email"
+              placeholder="example@email.com" autoComplete="email"
               className={inputClass} style={inputStyle} />
           </div>
 
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>이름</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-base font-medium text-cream">사장님 성함 (또는 닉네임)</label>
             <input type="text" value={form.nickname} onChange={set('nickname')}
-              placeholder="사장님 이름" autoComplete="name"
+              placeholder="홍길동" autoComplete="name"
               className={inputClass} style={inputStyle} />
           </div>
 
-          <div className="flex items-center gap-[14px]">
-            <label className={labelClass}>비밀번호</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-base font-medium text-cream">비밀번호</label>
             <input type="password" value={form.password} onChange={set('password')}
-              placeholder="6자 이상" autoComplete="new-password"
+              placeholder="비밀번호를 입력해주세요" autoComplete="new-password"
               className={inputClass} style={inputStyle} />
           </div>
 
@@ -111,16 +110,13 @@ export default function RegisterPage() {
 
         </form>
 
-        <div className="w-full text-center">
-          <p className="text-cream text-lg mb-2">이미 계정이 있으신가요?</p>
-          <button
-            onClick={() => navigate('/login')}
-            className="px-8 py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-lg hover:bg-camel transition-all active:translate-y-[2px] shadow-lg"
-            style={{ borderBottom: '4px solid rgba(255,255,255,0.55)' }}
-          >
-            로그인 →
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/login')}
+          className="w-full py-2 transition-colors text-center mt-2"
+        >
+          <span className="text-[1.1rem] text-cream block">이미 계정이 있으신가요?</span>
+          <span className="text-sand text-[1.65rem] font-bold block">로그인 →</span>
+        </button>
 
       </main>
     </div>
