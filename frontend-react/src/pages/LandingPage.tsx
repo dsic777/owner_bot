@@ -54,8 +54,8 @@ export default function LandingPage() {
           {isLoggedIn && (
             <button
               onClick={() => navigate('/generate')}
-              className="w-full py-2 rounded-lg bg-[#b89973] text-darkbrown font-bold text-[1.55rem] hover:bg-camel transition-all active:translate-y-[2px]"
-              style={{ boxShadow: '0 4px 0 #7a5c35, 0 8px 16px rgba(0,0,0,0.3)' }}
+              className="w-full py-2 rounded-xl bg-[#b89973] text-darkbrown font-bold text-[1.55rem] hover:bg-camel transition-all active:translate-y-[2px] shadow-lg"
+              style={{ borderBottom: '4px solid rgba(255,255,255,0.55)' }}
             >
               콘텐츠 생성 →
             </button>
