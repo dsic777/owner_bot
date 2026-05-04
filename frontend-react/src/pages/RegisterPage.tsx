@@ -63,7 +63,7 @@ export default function RegisterPage() {
         ←
       </button>
 
-      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[80px] overflow-y-auto">
+      <main className="relative z-10 flex-1 flex flex-col px-6 gap-4 pt-[65px] overflow-y-auto">
 
         <div className="text-center mb-2">
           <h2 className="text-[2.2rem] font-bold text-cream mb-1">사장봇 시작하기</h2>
