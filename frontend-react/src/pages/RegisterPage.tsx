@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import NightBackground from '../components/NightBackground'
 import { apiFetch } from '../lib/api'
 
-const inputClass = "w-full px-4 py-[9px] rounded-xl text-xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
+const inputClass = "w-full px-4 py-[9px] rounded-xl text-2xl text-cream placeholder-muted border border-border focus:border-sand focus:outline-none transition-colors"
 const inputStyle = { background: 'rgba(33,58,86,0.75)', backdropFilter: 'blur(8px)' }
 
 export default function RegisterPage() {
