@@ -15,8 +15,7 @@
 
 **https://dsic.duckdns.org/ownerbot/**
 
-> 핸드폰 브라우저에서 접속 후 **"홈 화면에 추가"** 하면
-> 주소창 없는 앱처럼 사용할 수 있습니다.
+> Chrome 브라우저에서 접속해 주세요. (PWA 설치 불필요)
 
 ---
 
@@ -26,10 +25,12 @@
 |------|------|
 | 블로그 | 네이버 SEO 최적화 블로그 글 자동 생성 |
 | 리뷰 답글 | 고객 리뷰에 대한 사장님 답글 자동 생성 |
-| 쇼츠 기획 | 3컷 구조 쇼츠 대본 자동 생성 |
-| 썸네일 | 썸네일 문구 자동 생성 |
+| 쇼츠 기획 | 7컷 타임라인 쇼츠 대본 + 촬영 팁 자동 생성 |
+| 썸네일 | 썸네일 문구·이미지 가이드·디자인 가이드 자동 생성 |
+| 업종 자동 감지 | 상호명 입력 시 AI가 업종 자동 추천 |
+| 음성 입력 | 마이크로 가게 정보 음성 입력 지원 |
 | 크레딧 | 가입 시 3크레딧 무료 지급 |
-| 히스토리 | 생성 이력 조회·삭제 |
+| 히스토리 | 생성 이력 조회·재생성·삭제 |
 
 ---
 
@@ -40,11 +41,10 @@
 | 프론트엔드 | React 18 + TypeScript (Vite) |
 | 백엔드 | FastAPI (Python 3.11) |
 | DB | PostgreSQL (AWS EC2) |
-| AI | Claude API (claude-sonnet-4-6) |
+| AI | Claude API (claude-haiku-4-5-20251001) |
 | 인증 | JWT |
 | CSS | Tailwind CSS |
 | 배포 | Docker + AWS EC2 + Nginx |
-| PWA | Web App Manifest (홈 화면 설치) |
 
 ---
 
@@ -79,6 +79,7 @@ pip install -r backend/requirements.txt
 SECRET_KEY=your-secret-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 DATABASE_URL=postgresql://user:pass@localhost:5432/ownerbot
+V2_DATABASE_URL=postgresql://user:pass@localhost:5432/ownerbot2
 
 # 5. 서버 실행
 cd backend
@@ -111,6 +112,8 @@ docker-compose up --build -d
 | GET | /api/mypage/me | 내 정보 조회 |
 | GET | /api/mypage/credits | 크레딧 조회 |
 | POST | /api/mypage/charge | 크레딧 충전 |
+| GET | /api/business-types | 업종 목록 (v2 DB) |
+| POST | /api/business-types/detect | 상호명으로 업종 자동 감지 |
 
 ---
 
