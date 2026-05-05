@@ -622,7 +622,7 @@ export default function GeneratePage() {
                 <button
                   key={tab}
                   onClick={() => { setActiveTab(tab); stop() }}
-                  className={`flex-1 py-2 text-base font-bold transition-colors ${
+                  className={`flex-1 py-2 text-lg font-bold transition-colors ${
                     activeTab === tab ? 'text-sand border-b-2 border-sand' : 'text-muted'
                   }`}
                 >
@@ -642,9 +642,9 @@ export default function GeneratePage() {
                       <CopyButton text={`${result.blog.title}\n\n${result.blog.body}\n\n${result.blog.hashtags}`} />
                     </div>
                   </div>
-                  <p className="text-xl font-bold text-cream">{result.blog.title}</p>
-                  <p className="text-base text-cream leading-relaxed whitespace-pre-wrap">{result.blog.body}</p>
-                  <p className="text-base text-sand">{result.blog.hashtags}</p>
+                  <p className="text-2xl font-bold text-cream">{result.blog.title}</p>
+                  <p className="text-lg text-cream leading-relaxed whitespace-pre-wrap">{result.blog.body}</p>
+                  <p className="text-lg text-sand">{result.blog.hashtags}</p>
                 </>
               )}
 

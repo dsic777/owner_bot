@@ -4,9 +4,7 @@ import './index.css'
 import App from './App.tsx'
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/ownerbot/sw.js')
-  })
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()))
 }
 
 createRoot(document.getElementById('root')!).render(
