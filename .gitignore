@@ -32,6 +32,8 @@ frontend-react/dist/
 
 # 개발 문서 (README.md 제외)
 *.md
+*.docx
+*.pdf
 !README.md
 !개발과정.md
 !.gitignore
