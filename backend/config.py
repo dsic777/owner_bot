@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     # 환경
     ENV: str = "development"
 
+    # 메일
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
+    MAIL_FROM: str = ""
+
     class Config:
         env_file = [".env", "backend/.env"]
         env_file_encoding = "utf-8"

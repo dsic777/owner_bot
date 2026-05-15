@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 from api.router import api_router
 
-from modules.user.models import User
+from modules.user.models import User, PasswordResetToken
 from modules.generate.models import GenerationHistory, GuestUsage
 from modules.history.models import CreditTransaction, Subscription
 

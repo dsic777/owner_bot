@@ -114,6 +114,13 @@ export default function LoginPage() {
           <span className="text-sand text-[1.65rem] font-bold block">회원가입 →</span>
         </button>
 
+        <button
+          onClick={() => navigate('/forgot-password')}
+          className="w-full text-center text-muted text-base hover:text-sand transition-colors"
+        >
+          비밀번호를 잊으셨나요?
+        </button>
+
       </main>
     </div>
   )
